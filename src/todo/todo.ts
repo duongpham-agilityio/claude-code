@@ -29,8 +29,7 @@ export function removeTask(
   filter: Filter,
   visibleIndex: number,
 ): Task[] {
-  if (visibleIndex < 0 || visibleIndex >= filterTasks(tasks, filter).length) {
-    return tasks
-  }
-  return tasks.filter((_, index) => index !== visibleIndex)
+  const target = filterTasks(tasks, filter)[visibleIndex]
+  if (!target) return tasks
+  return tasks.filter((task) => task.id !== target.id)
 }
