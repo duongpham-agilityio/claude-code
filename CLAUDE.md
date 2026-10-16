@@ -1,43 +1,43 @@
 # Project
-Repo học làm việc với Claude Code trong dự án thực: từ nhận ticket (feature, bug) đến deliver.
+Repo for learning to work with Claude Code on a real project: from receiving a ticket (feature, bug) to delivery.
 
 # Architecture
-- Single-page React 19 + TypeScript + Vite app, chưa có router, state dùng React built-in
-- Code theo feature: `src/features/<feature>/` (component, hook, logic, test); dùng chung đặt ở `src/shared/`; feature không import feature khác
-- `src/todo/` là ngoại lệ, chưa theo cấu trúc features (chưa chuyển)
+- Single-page React 19 + TypeScript + Vite app, no router yet, state uses React built-ins
+- Code is organized by feature: `src/features/<feature>/` (component, hook, logic, test); shared code goes in `src/shared/`; a feature must not import another feature
+- `src/todo/` is an exception, not yet following the features structure (not migrated yet)
 
 # Commands
-Chỉ dùng `pnpm`, không dùng npm / yarn.
-- `pnpm dev` — chạy local
+Use `pnpm` only, never npm / yarn.
+- `pnpm dev` — run locally
 - `pnpm build` — `tsc -b && vite build`
 - `pnpm lint` — oxlint
-- `pnpm test` — vitest run (chạy một lần, không watch); một file: `pnpm test src/todo/todo.test.ts`
+- `pnpm test` — vitest run (single run, no watch); single file: `pnpm test src/todo/todo.test.ts`
 
-# Workflow (mỗi ticket)
-1. Đọc ticket
-2. Clarify: liệt kê chỗ mơ hồ + câu hỏi để user gửi người tạo ticket. Dừng chờ trả lời, không tự đoán. Nếu ticket không có chỗ mơ hồ, nêu rõ điều đó rồi chuyển sang bước Plan, không cần dừng
-3. Plan: đảm bảo đang ở đúng branch (xem Git Rules), rồi tạo một file ngắn trong `docs/plans/<ten-ticket>.md` (mục tiêu, các bước, file sửa, cách verify). Chờ user duyệt trước khi code
-4. Test: viết test fail trước (TDD cho bug/feature)
-5. Code: viết code cho test pass
-6. Verify: chạy `pnpm test`, `pnpm lint` và `pnpm build` trước khi báo xong (lỗi type chỉ lộ ra khi build)
-7. Commit / push / PR: theo Git Rules
+# Workflow (per ticket)
+1. Read the ticket
+2. Clarify: list ambiguities + questions for the user to send to the ticket author. Stop and wait for answers, do not guess. If the ticket has no ambiguity, state that explicitly and move on to the Plan step without stopping
+3. Plan: make sure you are on the correct branch (see Git Rules), then create a short file in `docs/plans/<ticket-name>.md` (goal, steps, files to change, how to verify). Wait for user approval before coding
+4. Test: write a failing test first (TDD for bugs/features)
+5. Code: write code to make the test pass
+6. Verify: run `pnpm test`, `pnpm lint` and `pnpm build` before reporting done (type errors only surface at build)
+7. Commit / push / PR: follow Git Rules
 
 # Conventions
-- Đặt tên: file/folder kebab-case (vd `pluralize-utility.ts`); ngoại lệ component dùng thư mục PascalCase, file `PascalCase/index.tsx`; style bằng CSS Modules `PascalCase/index.module.css`
-- Component, function, hook luôn dùng arrow function; không có logic bên trong thì dùng short-return
-- Test đặt cạnh file: `todo.ts` → `todo.test.ts`; component `PascalCase/index.test.tsx`
-- Logic thuần không import React
-- Hàm logic throw `Error` với message rõ ràng, không nuốt lỗi. Chỉ tầng UI / điểm vào mới try-catch và hiển thị lỗi cho user
+- Naming: files/folders kebab-case (e.g. `pluralize-utility.ts`); exception: components use a PascalCase folder with file `PascalCase/index.tsx`; styles use CSS Modules `PascalCase/index.module.css`
+- Components, functions, hooks always use arrow functions; use short-return when there is no logic inside
+- Tests live next to the file: `todo.ts` → `todo.test.ts`; components `PascalCase/index.test.tsx`
+- Pure logic does not import React
+- Logic functions throw `Error` with a clear message and never swallow errors. Only the UI layer / entry points try-catch and show errors to the user
 
 # Hard constraints
-- Không đọc, in ra hoặc commit file `.env*`; action nào cần secret phải hỏi trước
-- Không sửa test cho pass; test fail thì sửa code. Nếu cho rằng test sai so với yêu cầu ticket, dừng lại và hỏi user
-- Không thêm dependency mới (gồm router, thư viện state/data) khi chưa hỏi
-- Không sửa `docs/exercises/` (gồm các file ticket)
+- Do not read, print or commit `.env*` files; ask first before any action that needs a secret
+- Do not edit tests to make them pass; if a test fails, fix the code. If you believe the test is wrong against the ticket requirements, stop and ask the user
+- Do not add new dependencies (including router, state/data libraries) without asking
+- Do not edit `docs/exercises/` (including ticket files)
 
 # Language
-- Chat với user: tiếng Việt
-- Code, comment, commit, `docs/plans/`: tiếng Anh
+- Chat with user: Vietnamese
+- Code, comments, commits, `docs/plans/`: English
 
 # Git Rules
 ## Commits
