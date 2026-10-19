@@ -16,6 +16,23 @@ const setup = (): Task[] => {
   return tasks
 }
 
+describe('createTask', () => {
+  it('throws when the title is only spaces (TODO-102)', () => {
+    expect(() => createTask('   ')).toThrow('Title is required')
+  })
+
+  it('throws when the title is empty', () => {
+    expect(() => createTask('')).toThrow('Title is required')
+  })
+
+  it('creates a task and keeps the title unchanged when valid', () => {
+    const task = createTask('Buy milk')
+
+    expect(task.title).toBe('Buy milk')
+    expect(task.completed).toBe(false)
+  })
+})
+
 describe('removeTask', () => {
   it('removes the clicked task when the completed filter is active (TODO-103)', () => {
     const tasks = removeTask(setup(), 'completed', 1)

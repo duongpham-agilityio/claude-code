@@ -9,6 +9,7 @@ export interface Task {
 let nextId = 1
 
 export function createTask(title: string): Task {
+  if (title.trim() === '') throw new Error('Title is required')
   return { id: nextId++, title, completed: false }
 }
 
