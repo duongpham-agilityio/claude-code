@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 docs/plan-per-day/*
+
+# Playwright
+.playwright-mcp
