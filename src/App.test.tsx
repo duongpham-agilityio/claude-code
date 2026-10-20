@@ -30,4 +30,35 @@ describe('App login', () => {
     login('  admin@test.com  ')
     expect(screen.getByText('welcome to my app')).toBeTruthy()
   })
+
+  it('accepts the email regardless of case', () => {
+    login('Admin@Test.com')
+    expect(screen.getByText('welcome to my app')).toBeTruthy()
+  })
+
+  it('shows error for a malformed email', () => {
+    login('abc')
+    expect(screen.getByText('Invalid email')).toBeTruthy()
+  })
+
+  it('shows error for an empty email', () => {
+    login('')
+    expect(screen.getByText('Invalid email')).toBeTruthy()
+  })
+
+  it('shows error for an empty password', () => {
+    render(<App />)
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'admin@test.com' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Login' }))
+    expect(screen.getByText('Password is required')).toBeTruthy()
+    expect(screen.queryByText('welcome to my app')).toBeNull()
+  })
+
+  it('clears the error after a failed attempt followed by a success', () => {
+    login('wrong@test.com')
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'admin@test.com' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Login' }))
+    expect(screen.queryByText('Invalid email')).toBeNull()
+    expect(screen.getByText('welcome to my app')).toBeTruthy()
+  })
 })
