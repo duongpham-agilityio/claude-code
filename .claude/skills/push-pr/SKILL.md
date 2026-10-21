@@ -1,0 +1,47 @@
+---
+name: push-pr
+argument-hint: "[auto|manual] [base-branch] [remote=<name>]"
+description: Push the current branch to its remote and open a pull request (GitHub, via gh) or merge request (GitLab, via glab) with a structured description - What / Why / How tested / Screenshots. Supports auto mode (push and create the PR straight away) and manual mode (show a draft and wait for approval, then push and create the PR). Make sure to use this skill whenever the user says push, push code, open a PR, create a pull request, merge request, MR, submit for review, "tạo PR", "tạo MR", "đẩy code lên", "push và tạo PR", even if they do not mention a mode or a tool.
+---
+
+# Push and open PR/MR
+
+Pushing and opening a PR are outward-facing and hard to undo. A script has already checked the repo and decided what happens next, so follow its output instead of re-deriving it.
+
+## Pre-flight (computed for you)
+!`bash "${CLAUDE_SKILL_DIR}/scripts/preflight.sh" $ARGUMENTS`
+
+If the block above is empty, run `bash .claude/skills/push-pr/scripts/preflight.sh <args>` yourself. Args: `auto` or `manual` (default manual), `remote=<name>`, any other word is the base branch.
+
+Do exactly what `NEXT:` says and nothing beyond it. On `STOP` or `EXISTING_PR`, report it to the user and end; do not push or create anything.
+
+## Description template
+Fill this exact shape; reviewers scan many PRs, so a fixed layout matters.
+
+```markdown
+## What
+- <bullets of what changed, grouped by area, not one per commit>
+
+## Why
+<the problem or ticket this solves, 1-3 lines; link the issue if the branch/commits mention one>
+
+## How tested
+Steps someone else can follow to verify this PR:
+1. <setup, e.g. checkout the branch and install deps>
+2. <automated checks: the real commands for this repo, from package.json / Makefile / CI config>
+3. <manual steps: where to click or run, and the expected result>
+
+## Screenshots
+<before/after images, or "N/A - no UI change">
+```
+
+- Title: `type(scope): subject`, lowercase subject, no trailing period, from the commits.
+- How tested is for a reviewer who has not seen your session. List only checks you ran or steps that are real; never invent results. Say what was not run.
+- Screenshots: for UI changes ask the user for image files or links (CLIs cannot attach images to a PR body), or capture them if a browser tool is available. Otherwise `N/A - no UI change`.
+
+## Create
+- GitHub: `gh pr create --base <BASE> --head <BRANCH> --title "..." --body "$(cat <<'EOF' ... EOF)"`
+- GitLab: `glab mr create --target-branch <BASE> --title "..." --description "..."`
+
+## Final report
+PR/MR URL, base and head, mode used, and what was not done (e.g. "screenshots missing", "tests not run").
