@@ -42,3 +42,9 @@ The Vitest `storybook` project (Playwright) is excluded from `pnpm test`; run it
 - Hooks in `.claude/settings.json`: block `git push ... main`; run lint/test/build before the `commit` skill; forbid Read/Edit/Write on `.env*`.
 - Project skills: `commit`, `create-branch`, `push-pr`, `ticket-analysis`, `ticket-plan`, `bug-repro-report`, `release-checklist`. Ticket artifacts go to `docs/analysis/`, `docs/bug-reports/`, `docs/plans/`.
 - Remotes: `github` (PRs via `gh`), `origin` (GitLab, MRs via `glab`).
+
+## Preview rule (absolute)
+
+- ALWAYS run a preview (`preview_start`) after you edit, update or create any component or feature. No exception; passing tests/build/lint does not replace it.
+- If the change touches UI, run the `storybook` config from `.claude/launch.json` and check the affected story: it is faster than the full app. Use the `dev` config for non-UI features or when the change needs the whole app.
+- Check the console/logs for errors and take a screenshot as proof before reporting the work as done.
