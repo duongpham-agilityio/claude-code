@@ -1,7 +1,18 @@
-import { HomePage } from "@/pages/HomePage.sample";
+// Components
+import { TodoList } from "@/components/todo";
+
+// Hooks
+import { useTodoList } from "@/hooks/todo";
 
 function App() {
-  return <HomePage />;
+  const { todos } = useTodoList();
+
+  return (
+    <main className="flex w-full flex-1 flex-col gap-4 bg-gray-100 p-6 text-left scheme-light [--text-h:var(--color-gray-900)]">
+      <h1>Todo Practice</h1>
+      <TodoList todos={todos} />
+    </main>
+  );
 }
 
 export default App;
