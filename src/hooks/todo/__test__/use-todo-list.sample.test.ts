@@ -1,7 +1,7 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { useTodoSampleList } from "../use-todo-list.sample";
+import { useTodoSampleList } from "@/hooks/todo/use-todo-list.sample";
 
 describe("useTodoSampleList", () => {
   it("starts with an empty todo list", () => {
