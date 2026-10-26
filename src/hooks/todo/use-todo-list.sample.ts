@@ -7,7 +7,7 @@
 import { useCallback, useState } from "react";
 
 // Types
-import type { TodoItemSample, TodoItemSampleList } from "../../types/todo";
+import type { TodoItemSample, TodoItemSampleList } from "@/types/todo";
 
 export const useTodoSampleList = () => {
   const [todos, setState] = useState<TodoItemSampleList>([]); // [] -> this is the value got from store. Also, we will replaced the store here
