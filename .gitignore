@@ -27,3 +27,5 @@ docs/plan-per-day/*
 
 # Playwright
 .playwright-mcp
+*storybook.log
+storybook-static
