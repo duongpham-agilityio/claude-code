@@ -15,7 +15,7 @@ Backlog of improvements for this skill. One entry per item, newest at the bottom
 
 | ID | Title | Status |
 |----|-------|--------|
-| PP-001 | Create the PR against the parent branch | open |
+| PP-001 | Create the PR against the parent branch | done |
 
 ## Entry template
 
@@ -36,7 +36,7 @@ Backlog of improvements for this skill. One entry per item, newest at the bottom
 
 ## PP-001: Create the PR against the parent branch
 
-- Status: open
+- Status: done
 - Found: 2026-10-26
 
 ### Problem

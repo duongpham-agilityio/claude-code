@@ -38,10 +38,14 @@ if [ -n "$cli" ]; then
     else pr=$(glab mr view 2>/dev/null | sed -n 's/^url:[[:space:]]*//p' | head -1); pr=${pr:-none}; fi
   else auth=not-logged-in; fi
 fi
-if [ -z "$base" ] && [ -n "$remote" ]; then
-  base=$(git symbolic-ref --short "refs/remotes/$remote/HEAD" 2>/dev/null | sed "s#^$remote/##")
-  [ -z "$base" ] && for b in main master; do git rev-parse -q --verify "refs/remotes/$remote/$b" >/dev/null && base=$b && break; done
+# Base: explicit arg > parent branch (first reflog entry "branch: Created from <parent>"). No default-branch fallback.
+if [ -z "$base" ] && [ -n "$branch" ]; then
+  base=$(git reflog show --format=%gs "$branch" 2>/dev/null | tail -1 | sed -n 's/^branch: Created from //p')
+  case "$base" in HEAD|refs/*|*[[:space:]]*) base="" ;; esac
+  base=${base#heads/}
 fi
+base_on_remote=n/a
+[ -n "$remote" ] && [ -n "$base" ] && { git rev-parse -q --verify "refs/remotes/$remote/$base" >/dev/null && base_on_remote=yes || base_on_remote=no; }
 ahead=n/a
 [ -n "$remote" ] && [ -n "$base" ] && ahead=$(git rev-list --count "$remote/$base..HEAD" 2>/dev/null || echo 0)
 
@@ -55,7 +59,8 @@ elif [ -n "$want" ] && [ -z "$remote" ]; then v="STOP: remote '$want' not found,
 elif [ -z "$remote" ]; then v="STOP: several remotes ($remotes), no upstream or pushDefault"; hint="Ask which remote for this run, then re-run with remote=<name>. Tell the user they can stop being asked by running once: git config remote.pushDefault <name>"
 elif [ "$host" = unknown ]; then v="STOP: unknown host for remote $remote"; hint="Only GitHub (gh) and GitLab (glab) are supported."
 elif [ "$auth" != ok ]; then v="STOP: CLI problem ($auth)"; hint="Tell the user to install or log in themselves (gh auth login / glab auth login). Never handle credentials."
-elif [ -z "$base" ]; then v="STOP: cannot detect base branch"; hint="Ask the user for the base branch, then pass it as an argument."
+elif [ -z "$base" ]; then v="STOP: cannot detect parent branch"; hint="The reflog does not say which branch '$branch' was created from. Ask the user for the target branch, then pass it as an argument. Never fall back to the default branch."
+elif [ "$base_on_remote" = no ]; then v="STOP: remote '$remote' has no target branch '$base'"; hint="Tell the user the remote does not have '$base'. They can push '$base' to $remote, pick another remote (remote=<name>), or pass a different base. Do not open a PR against another branch."
 elif [ "$ahead" = 0 ]; then v="STOP: no commits ahead of $remote/$base"; hint="Nothing to open a PR for."
 elif [ "$pr" != none ]; then v="EXISTING_PR"; hint="Report $pr. Create no second PR. Push new commits only if the user asked."
 fi
