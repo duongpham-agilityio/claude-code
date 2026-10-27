@@ -45,7 +45,7 @@ The Vitest `storybook` project (Playwright) is excluded from `pnpm test`; run it
 
 ## Management tools
 
-Skills read this table to find where project data lives. Only stable facts here: no connection state, token, DSN or key. Skills still check live that the MCP is connected, and use the fallback if not.
+Skills read this table to find where project data (tickets, tasks) lives: which tool to use (Access) and what to use instead when it is unavailable (Fallback). Keep only facts that rarely change. Never write secrets (token, DSN, key) or whether a tool is currently connected. Before using Access, a skill checks that the MCP server is connected; if not, it uses Fallback.
 
 | Category | Access | Fallback |
 |----------|--------|----------|
