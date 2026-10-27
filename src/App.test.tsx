@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { act, cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { useTodoStore } from "@/stores/todo";
 
@@ -8,6 +9,7 @@ import App from "./App";
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   useTodoStore.setState(useTodoStore.getInitialState());
 });
 
@@ -45,5 +47,79 @@ describe("App", () => {
     expect(screen.getAllByRole("listitem")).toHaveLength(2);
     expect(screen.getByText("Buy milk")).toBeInTheDocument();
     expect(screen.getByText("Write plan")).toBeInTheDocument();
+  });
+
+  it("adds a todo via the Add button and shows it in the list", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const input = screen.getByRole("textbox", { name: "New todo" });
+    await user.type(input, "  Buy milk  ");
+    await user.click(screen.getByRole("button", { name: "Add" }));
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+    expect(screen.getByText("Buy milk")).toBeInTheDocument();
+    expect(input).toHaveValue("");
+    expect(screen.queryByText("No todos yet")).not.toBeInTheDocument();
+  });
+
+  it("adds a todo via Enter", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(
+      screen.getByRole("textbox", { name: "New todo" }),
+      "Write plan{Enter}",
+    );
+
+    expect(screen.getByText("Write plan")).toBeInTheDocument();
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+  });
+
+  it("shows the newest todo first and allows duplicate titles", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const input = screen.getByRole("textbox", { name: "New todo" });
+    await user.type(input, "A{Enter}");
+    await user.type(input, "B{Enter}");
+    await user.type(input, "A{Enter}");
+    await user.type(input, "C{Enter}");
+
+    const items = screen.getAllByRole("listitem");
+    expect(items).toHaveLength(4);
+    expect(
+      items.map((item) => item.textContent?.replace(/EditRemove$/, "")),
+    ).toEqual(["C", "A", "B", "A"]);
+  });
+
+  it("does not add a whitespace-only title", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+
+    await user.type(screen.getByRole("textbox", { name: "New todo" }), "   ");
+
+    expect(screen.getByRole("button", { name: "Add" })).toBeDisabled();
+    await user.keyboard("{Enter}");
+    expect(screen.getByText("No todos yet")).toBeInTheDocument();
+    expect(alertSpy).not.toHaveBeenCalled();
+  });
+
+  it("alerts, adds nothing and keeps the typed value when adding throws", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+    vi.spyOn(crypto, "randomUUID").mockImplementation(() => {
+      throw new Error("boom");
+    });
+
+    const input = screen.getByRole("textbox", { name: "New todo" });
+    await user.type(input, "Buy milk{Enter}");
+
+    expect(alertSpy).toHaveBeenCalledWith("boom");
+    expect(screen.getByText("No todos yet")).toBeInTheDocument();
+    expect(input).toHaveValue("Buy milk");
   });
 });
