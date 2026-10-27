@@ -19,7 +19,7 @@
     },
     {
       "id": 2,
-      "prompt": "phân tích ticket #49 giúp tôi",
+      "prompt": "analyze ticket #49 for me",
       "expected_output": "Reference has no source, so the skill uses the 'Tasks' row of 'Management tools' in CLAUDE.md (GitHub Issues, remote github, MCP GitHub, fallback gh issue view). It checks live whether the MCP is connected, falls back to gh issue view 49 against the github remote, and writes docs/analysis/ticket-49-add-a-new-todo.md. It does not ask where the ticket is managed. Requires gh logged in to remote `github`.",
       "files": [],
       "assertions": [
@@ -33,7 +33,7 @@
     },
     {
       "id": 3,
-      "prompt": "phân tích ticket này giúp tôi:\n\nPROJ-123: Export report to CSV\nAs an admin I want to export the monthly report to CSV.\n- Add an Export button on the report page.\n- File contains all rows.\n- Send the file to ops-team.lead@example.com when done.\nAcceptance: clicking Export downloads a CSV.\n",
+      "prompt": "analyze this ticket for me:\n\nPROJ-123: Export report to CSV\nAs an admin I want to export the monthly report to CSV.\n- Add an Export button on the report page.\n- File contains all rows.\n- Send the file to ops-team.lead@example.com when done.\nAcceptance: clicking Export downloads a CSV.\n",
       "expected_output": "Ticket text is already in the prompt, so the skill does not fetch anything (no MCP, gh or glab call). Writes docs/analysis/ticket-PROJ-123-export-report-to-csv.md with questions on real gaps (columns, size, date range, encoding, failure, who gets the mail), the email redacted as [redacted], and a Vietnamese reply saying the ticket was already in the prompt.",
       "files": [],
       "assertions": [
@@ -48,7 +48,7 @@
     },
     {
       "id": 4,
-      "prompt": "ticket này thiếu gì không?",
+      "prompt": "is anything missing in this ticket?",
       "expected_output": "No ticket text and no reference at all. The skill says so in one short Vietnamese line, asks for a reference or the pasted text, and ends. It fetches nothing and writes no doc.",
       "files": [],
       "assertions": [
@@ -59,7 +59,7 @@
     },
     {
       "id": 6,
-      "prompt": "phân tích jira ticket PROJ-77 giúp tôi",
+      "prompt": "analyze jira ticket PROJ-77 for me",
       "expected_output": "Reference names Jira, which is not the project's declared tool. No Jira MCP is connected and no Jira CLI fits, so the skill asks one short Vietnamese question (is the ticket managed elsewhere, or can the user paste it?) and ends. It does not fall back to gh on the GitHub row, invents nothing and writes no doc.",
       "files": [],
       "assertions": [
