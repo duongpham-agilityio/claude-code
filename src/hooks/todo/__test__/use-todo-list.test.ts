@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { useTodoList } from "@/hooks/todo";
 import { useTodoStore } from "@/stores/todo";
@@ -12,6 +12,7 @@ const TODO: Todo = {
 };
 
 afterEach(() => {
+  vi.restoreAllMocks();
   useTodoStore.setState(useTodoStore.getInitialState());
 });
 
@@ -30,5 +31,38 @@ describe("useTodoList", () => {
     });
 
     expect(result.current.todos).toEqual([TODO]);
+  });
+
+  it("addTodo adds a trimmed todo at the top and returns true", () => {
+    const { result } = renderHook(() => useTodoList());
+    useTodoStore.setState({ todos: [TODO] });
+
+    let added = false;
+    act(() => {
+      added = result.current.addTodo("  New  ");
+    });
+
+    expect(added).toBe(true);
+    expect(result.current.todos.map((todo) => todo.title)).toEqual([
+      "New",
+      "Buy milk",
+    ]);
+  });
+
+  it("addTodo alerts and returns false when adding throws", () => {
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+    vi.spyOn(crypto, "randomUUID").mockImplementation(() => {
+      throw new Error("boom");
+    });
+    const { result } = renderHook(() => useTodoList());
+
+    let added = true;
+    act(() => {
+      added = result.current.addTodo("New");
+    });
+
+    expect(added).toBe(false);
+    expect(alertSpy).toHaveBeenCalledWith("boom");
+    expect(result.current.todos).toEqual([]);
   });
 });

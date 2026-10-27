@@ -23,4 +23,32 @@ describe("useTodoStore", () => {
 
     expect(useTodoStore.getState().todos).toEqual([TODO]);
   });
+
+  it("addTodo puts the new todo first and keeps the rest in order", () => {
+    useTodoStore.setState({ todos: [TODO] });
+
+    useTodoStore.getState().addTodo("New");
+
+    expect(useTodoStore.getState().todos.map((todo) => todo.title)).toEqual([
+      "New",
+      "Buy milk",
+    ]);
+  });
+
+  it("addTodo allows duplicate titles with different ids", () => {
+    useTodoStore.getState().addTodo("Same");
+    useTodoStore.getState().addTodo("Same");
+
+    const todos = useTodoStore.getState().todos;
+
+    expect(todos).toHaveLength(2);
+    expect(todos[0].id).not.toBe(todos[1].id);
+  });
+
+  it("addTodo throws and leaves todos unchanged for a blank title", () => {
+    expect(() => useTodoStore.getState().addTodo("  ")).toThrow(
+      "Title is required",
+    );
+    expect(useTodoStore.getState().todos).toEqual([]);
+  });
 });
