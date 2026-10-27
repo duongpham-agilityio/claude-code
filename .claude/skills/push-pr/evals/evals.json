@@ -70,6 +70,49 @@
         "Pushes to github",
         "Creates the PR without waiting for approval"
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "tạo PR giúp tôi, auto. Branch feat/x được tạo từ develop, remote github có develop",
+      "expected_output": "Base is the parent branch develop, not main.",
+      "files": [],
+      "assertions": [
+        "Runs gh pr create with --base develop",
+        "Does not target main",
+        "Final report states base develop"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "tạo PR, remote=origin. Branch feat/x được tạo từ develop nhưng origin không có develop",
+      "expected_output": "Stops and tells the user the remote has no target branch develop.",
+      "files": [],
+      "assertions": [
+        "Reports that remote origin has no target branch develop",
+        "Does not run git push or create a PR",
+        "Does not fall back to main or another base"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "tạo PR giúp tôi. Branch feat/y không có reflog (clone mới), không rõ tạo từ branch nào",
+      "expected_output": "Stops because the parent branch cannot be detected and asks the user for the target branch.",
+      "files": [],
+      "assertions": [
+        "Reports it cannot detect the parent branch",
+        "Asks the user for the target branch",
+        "Does not push or create a PR, and does not default to main"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "tạo PR vào base release/1.2, manual",
+      "expected_output": "Explicit base argument wins over the parent branch.",
+      "files": [],
+      "assertions": [
+        "Draft and command use release/1.2 as the base",
+        "Stops for approval before pushing"
+      ]
     }
   ]
 }

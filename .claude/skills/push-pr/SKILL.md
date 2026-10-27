@@ -11,7 +11,9 @@ Pushing and opening a PR are outward-facing and hard to undo. A script has alrea
 ## Pre-flight (computed for you)
 !`bash "${CLAUDE_SKILL_DIR}/scripts/preflight.sh" $ARGUMENTS`
 
-If the block above is empty, run `bash .claude/skills/push-pr/scripts/preflight.sh <args>` yourself. Args: `auto` or `manual` (default manual), `remote=<name>`, any other word is the base branch.
+If the block above is empty, run `bash .claude/skills/push-pr/scripts/preflight.sh <args>` yourself. Args: `auto` or `manual` (default manual), `remote=<name>`, any other word is the base branch (default: the parent branch, not the repo's default branch).
+
+Base branch: the PR targets the parent branch (the one the current branch was created from, read from the reflog), or the base passed as an argument. Never the default branch by assumption. If the script cannot find the parent, or the remote lacks that branch, it returns `STOP`: tell the user and end. Do not pick another base yourself.
 
 Do exactly what `NEXT:` says and nothing beyond it. On `STOP` or `EXISTING_PR`, report it to the user and end; do not push or create anything.
 
@@ -47,4 +49,4 @@ The PR/MR title and body must not mention AI generation in any form: no "🤖 Ge
 - GitLab: `glab mr create --target-branch <BASE> --title "..." --description "..."`
 
 ## Final report
-PR/MR URL, base and head, mode used, and what was not done (e.g. "screenshots missing", "tests not run").
+PR/MR URL, base (parent branch) and head, mode used, and what was not done (e.g. "screenshots missing", "tests not run").

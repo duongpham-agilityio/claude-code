@@ -15,7 +15,7 @@ Backlog of improvements for this skill. One entry per item, newest at the bottom
 
 | ID | Title | Status |
 |----|-------|--------|
-| CB-001 | Branch from the current branch and report where it came from | open |
+| CB-001 | Branch from the current branch and report where it came from | done |
 
 ## Entry template
 
@@ -36,7 +36,7 @@ Backlog of improvements for this skill. One entry per item, newest at the bottom
 
 ## CB-001: Branch from the current branch and report where it came from
 
-- Status: open
+- Status: done
 - Found: 2026-10-26
 
 ### Problem
