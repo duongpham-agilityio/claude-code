@@ -18,7 +18,7 @@ Do this first. The user should not have to paste the text or name a CLI.
 
 1. **Pick the source**:
    1. The reference names one (`github ticket #49`, `gitlab issue 12`, a GitHub/GitLab/Jira URL): use it.
-   2. Otherwise use the "Tasks" row of the "Management tools" section in `CLAUDE.md` (columns: tool, access, fallback). This repo has two remotes (`github`, `origin` on GitLab), so never guess the source from the git remote.
+   2. Otherwise use the "Tasks" row of the "Management tools" section in `CLAUDE.md` (columns: category, access, fallback; the access cell names the tracker and remote). This repo has two remotes (`github`, `origin` on GitLab), so never guess the source from the git remote.
    3. Neither gives a source: skip straight to the question in point 4. Do not run `gh`, `glab` or any MCP call "to see if it works": a bare `#49` could live in any tracker, and a lucky hit on the wrong one analyses the wrong ticket.
 2. **Try the MCP first**, and check live that its server is connected (look for its tools; load them if deferred). `CLAUDE.md` only declares what the project uses, never trust it for connection state. Use read-only calls only.
 3. **MCP not connected**: use the CLI, read-only. Take the fallback from the `CLAUDE.md` row, or the CLI that matches the source: `gh issue view <number> --repo <owner/name> --json number,title,body,state,comments` (GitHub), `glab issue view <number> --repo <owner/name> --comments` (GitLab). Always pass `--repo`, taken from the matching remote (`git remote -v`): this repo has two remotes, so without it `gh` resolves no repo and `--comments` alone can return empty output.

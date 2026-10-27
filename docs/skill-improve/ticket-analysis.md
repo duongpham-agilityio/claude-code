@@ -64,19 +64,19 @@ The skill does not know which task-management system the project uses (GitHub Is
 The project does not say where tickets live either. This repo has two remotes (`github` and `origin` on GitLab), so the git remote alone cannot tell the skill which one holds the tickets.
 
 ### Expected
-The project declares its management tools in a "Management tools" section of `CLAUDE.md`, one row per category (for example Tasks, Log tracing) with the tool, how to access it (MCP) and a fallback (CLI):
+The project declares its management tools in a "Management tools" section of `CLAUDE.md`, one row per category (for example Tasks, Log tracing) with how to access it (MCP, naming the tool) and a fallback (CLI):
 
 ```markdown
 ## Management tools
 
-| Category | Tool | Access | Fallback |
-|----------|------|--------|----------|
-| Tasks | GitHub Issues (remote `github`) | MCP GitHub | `gh issue view <number>` |
-| Log tracing | Sentry (project `<name>`) | MCP Sentry | ask the user for the issue link |
+| Category | Access | Fallback |
+|----------|--------|----------|
+| Tasks | MCP GitHub (Issues, remote `github`) | `gh issue view <number>` |
+| Log tracing | MCP Sentry (project `<name>`) | ask the user for the issue link |
 ```
 
 Rules for that section:
-- Only stable facts: category, tool, access, fallback. No connection state, and no token, DSN or key.
+- Only stable facts: category, access, fallback. No connection state, and no token, DSN or key.
 - Only categories a skill actually reads. Other skills (for example `bug-repro-report` reading log tracing) can reuse the same section.
 - Writing the section into `CLAUDE.md` is a follow-up done after this entry; it is not part of the skill change.
 

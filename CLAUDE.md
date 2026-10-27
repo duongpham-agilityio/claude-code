@@ -47,9 +47,9 @@ The Vitest `storybook` project (Playwright) is excluded from `pnpm test`; run it
 
 Skills read this table to find where project data lives. Only stable facts here: no connection state, token, DSN or key. Skills still check live that the MCP is connected, and use the fallback if not.
 
-| Category | Tool | Access | Fallback |
-|----------|------|--------|----------|
-| Tasks | GitHub Issues (remote `github`) | MCP GitHub | `gh issue view <number>` |
+| Category | Access | Fallback |
+|----------|--------|----------|
+| Tasks | MCP GitHub (Issues, remote `github`) | `gh issue view <number>` |
 
 ## Preview rule (absolute)
 
