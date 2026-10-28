@@ -1,4 +1,4 @@
-name: Claude
+name: Claude Code Review
 
 on:
   pull_request:
@@ -6,8 +6,8 @@ on:
     branches: [develop]
 
 jobs:
-  # Runs when a PR is opened or moved out of draft. Draft PRs are skipped.
   review:
+    # Skip draft PRs and forks (secrets are not available to forks)
     if: >-
       github.event.pull_request.draft == false &&
       github.event.pull_request.head.repo.full_name == github.repository
@@ -16,7 +16,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-      issues: read
       id-token: write
     steps:
       - uses: actions/checkout@v4
@@ -26,10 +25,8 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          track_progress: true
           prompt: /code-review medium --comment ${{ github.event.pull_request.number }}
           claude_args: |
             --model claude-sonnet-5-5
             --max-turns 25
-            --append-system-prompt "Follow CLAUDE.md. Never add a trailer, signature or attribution line to comments."
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh issue view:*),Bash(gh search:*),Bash(git log:*),Bash(git blame:*),Bash(git diff:*)"
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
