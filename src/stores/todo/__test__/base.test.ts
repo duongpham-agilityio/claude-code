@@ -51,4 +51,16 @@ describe("useTodoStore", () => {
     );
     expect(useTodoStore.getState().todos).toEqual([]);
   });
+
+  it("updateTodo changes the title of the matching todo only", () => {
+    const other: Todo = { id: "other-id", title: "Other", done: true };
+    useTodoStore.setState({ todos: [TODO, other] });
+
+    useTodoStore.getState().updateTodo(other.id, "  Renamed  ");
+
+    expect(useTodoStore.getState().todos.map((todo) => todo.title)).toEqual([
+      "Buy milk",
+      "Renamed",
+    ]);
+  });
 });

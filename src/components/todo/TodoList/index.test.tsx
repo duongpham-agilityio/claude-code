@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { Todo } from "@/types/todo";
 
@@ -82,5 +83,36 @@ describe("TodoList", () => {
 
     rerender(<TodoList todos={[]} />);
     expect(screen.getByText("No todos yet")).toBeInTheDocument();
+  });
+
+  it("calls onEdit with the id of the edited todo and the trimmed new title", async () => {
+    const user = userEvent.setup();
+    const onEdit = vi.fn();
+    render(<TodoList todos={TODOS} onEdit={onEdit} />);
+
+    await user.click(screen.getByRole("button", { name: "Edit Another task" }));
+    const input = screen.getByRole("textbox", { name: "Todo title" });
+    await user.clear(input);
+    await user.type(input, "  Renamed  ");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(onEdit).toHaveBeenCalledTimes(1);
+    expect(onEdit).toHaveBeenCalledWith(
+      "0a1b2c3d-4e5f-4a6b-9c7d-8e9f0a1b2c3d",
+      "Renamed",
+    );
+  });
+
+  it("does not call onEdit on Cancel", async () => {
+    const user = userEvent.setup();
+    const onEdit = vi.fn();
+    render(<TodoList todos={TODOS} onEdit={onEdit} />);
+
+    await user.click(screen.getByRole("button", { name: "Edit Another task" }));
+    await user.type(screen.getByRole("textbox", { name: "Todo title" }), "x");
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(onEdit).not.toHaveBeenCalled();
+    expect(screen.getByText("Another task")).toBeInTheDocument();
   });
 });

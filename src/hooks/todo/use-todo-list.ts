@@ -15,5 +15,7 @@ export const useTodoList = () => {
     }
   };
 
-  return { todos, addTodo };
+  const updateTodo = useTodoStore((state) => state.updateTodo);
+
+  return { todos, addTodo, updateTodo };
 };
