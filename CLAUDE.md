@@ -43,6 +43,14 @@ The Vitest `storybook` project (Playwright) is excluded from `pnpm test`; run it
 - Project skills: `commit`, `create-branch`, `push-pr`, `ticket-analysis`, `ticket-plan`, `bug-repro-report`, `release-checklist`. Ticket artifacts go to `docs/analysis/`, `docs/bug-reports/`, `docs/plans/`.
 - Remotes: `github` (PRs via `gh`), `origin` (GitLab, MRs via `glab`).
 
+## Management tools
+
+Skills read this table to find where project data (tickets, tasks) lives: which tool to use (Access) and what to use instead when it is unavailable (Fallback). Keep only facts that rarely change. Never write secrets (token, DSN, key) or whether a tool is currently connected. Before using Access, a skill checks that the MCP server is connected; if not, it uses Fallback.
+
+| Category | Access | Fallback |
+|----------|--------|----------|
+| Tasks | MCP GitHub (Issues, remote `github`) | `gh issue view <number>` |
+
 ## Preview rule (absolute)
 
 - ALWAYS run a preview (`preview_start`) after you edit, update or create any component or feature. No exception; passing tests/build/lint does not replace it.
