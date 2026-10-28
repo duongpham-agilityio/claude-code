@@ -6,6 +6,7 @@ import type { Todo } from "@/types/todo";
 
 export interface TodoListProps {
   todos: Todo[];
+  onEdit?: (id: Todo["id"], title: Todo["title"]) => void;
 }
 
 export const TodoList = (props: TodoListProps) => {
@@ -16,7 +17,7 @@ export const TodoList = (props: TodoListProps) => {
   return (
     <ul className="flex flex-col gap-4">
       {props.todos.map((todo) => (
-        <TodoItem key={todo.id} todo={todo} />
+        <TodoItem key={todo.id} todo={todo} onEdit={props.onEdit} />
       ))}
     </ul>
   );

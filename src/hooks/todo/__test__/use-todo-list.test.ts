@@ -49,6 +49,31 @@ describe("useTodoList", () => {
     ]);
   });
 
+  it("updateTodo changes the title of that todo only", () => {
+    const other: Todo = {
+      id: "0a1b2c3d-4e5f-4a6b-9c7d-8e9f0a1b2c3d",
+      title: "Walk dog",
+      done: true,
+    };
+    const { result } = renderHook(() => useTodoList());
+    act(() => {
+      useTodoStore.setState({ todos: [TODO, other] });
+    });
+
+    act(() => {
+      result.current.updateTodo(TODO.id, "  Buy bread  ");
+    });
+
+    expect(result.current.todos.map((todo) => todo.title)).toEqual([
+      "Buy bread",
+      other.title,
+    ]);
+    expect(result.current.todos.map((todo) => todo.done)).toEqual([
+      TODO.done,
+      other.done,
+    ]);
+  });
+
   it("addTodo alerts and returns false when adding throws", () => {
     const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
     vi.spyOn(crypto, "randomUUID").mockImplementation(() => {

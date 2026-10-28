@@ -4,14 +4,18 @@ import { create } from "zustand";
 import type { Todo } from "@/types/todo";
 
 import { createTodo } from "./create-todo";
+import { updateTodoTitle } from "./update-todo";
 
 export interface TodoState {
   todos: Todo[];
   addTodo: (title: string) => void;
+  updateTodo: (id: Todo["id"], title: Todo["title"]) => void;
 }
 
 export const useTodoStore = create<TodoState>()((set) => ({
   todos: [],
   addTodo: (title) =>
     set((state) => ({ todos: [createTodo(title), ...state.todos] })),
+  updateTodo: (id, title) =>
+    set((state) => ({ todos: updateTodoTitle(state.todos, id, title) })),
 }));

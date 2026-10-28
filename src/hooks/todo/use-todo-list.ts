@@ -1,9 +1,17 @@
+// External libs
+import { useShallow } from "zustand/react/shallow";
+
 // Stores
 import { useTodoStore } from "@/stores/todo";
 
 export const useTodoList = () => {
-  const todos = useTodoStore((state) => state.todos);
-  const addTodoToStore = useTodoStore((state) => state.addTodo);
+  const { todos, addTodo: addTodoToStore, updateTodo } = useTodoStore(
+    useShallow((state) => ({
+      todos: state.todos,
+      addTodo: state.addTodo,
+      updateTodo: state.updateTodo,
+    })),
+  );
 
   const addTodo = (title: string): boolean => {
     try {
@@ -15,5 +23,5 @@ export const useTodoList = () => {
     }
   };
 
-  return { todos, addTodo };
+  return { todos, addTodo, updateTodo };
 };
