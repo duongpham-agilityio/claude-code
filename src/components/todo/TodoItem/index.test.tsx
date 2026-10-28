@@ -134,12 +134,20 @@ describe("TodoItem", () => {
     expect(onEdit).not.toHaveBeenCalled();
   });
 
-  it("calls onRemove with the id when Remove is clicked", async () => {
+  it("calls onRemove with the id when Delete is clicked", async () => {
     const { onRemove } = setup();
 
-    await userEvent.click(screen.getByRole("button", { name: /remove/i }));
+    await userEvent.click(screen.getByRole("button", { name: /delete/i }));
 
     expect(onRemove).toHaveBeenCalledWith(TODO.id);
+  });
+
+  it("names the Delete button after the todo for screen readers", () => {
+    setup();
+
+    expect(
+      screen.getByRole("button", { name: "Delete Learn React" }),
+    ).toHaveTextContent(/^Delete$/);
   });
 
   it("renders without callbacks and does not throw on click", async () => {
@@ -151,7 +159,7 @@ describe("TodoItem", () => {
 
     await userEvent.click(screen.getByRole("checkbox"));
     await userEvent.click(screen.getByRole("button", { name: /edit/i }));
-    await userEvent.click(screen.getByRole("button", { name: /remove/i }));
+    await userEvent.click(screen.getByRole("button", { name: /delete/i }));
 
     expect(screen.getByRole("listitem")).toBeInTheDocument();
   });

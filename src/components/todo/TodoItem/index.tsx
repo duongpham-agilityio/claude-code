@@ -111,11 +111,11 @@ export const TodoItem = (props: TodoItemProps) => {
         )}
         <button
           type="button"
-          aria-label={`Remove ${props.todo.title}`}
+          aria-label={`Delete ${props.todo.title}`}
           onClick={() => props.onRemove?.(props.todo.id)}
           className={BUTTON_CLASS}
         >
-          Remove
+          Delete
         </button>
       </div>
     </li>

@@ -61,6 +61,25 @@ export const Editing: Story = {
   },
 };
 
+export const Delete: Story = {
+  args: {
+    todo: {
+      id: "44444444-4444-4444-8444-444444444444",
+      title: "Learn React",
+      done: false,
+    },
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Delete Learn React" }),
+    );
+    await expect(args.onRemove).toHaveBeenCalledWith(
+      "44444444-4444-4444-8444-444444444444",
+    );
+  },
+};
+
 export const LongTitle: Story = {
   args: {
     todo: {

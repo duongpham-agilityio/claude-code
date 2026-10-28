@@ -115,4 +115,15 @@ describe("TodoList", () => {
     expect(onEdit).not.toHaveBeenCalled();
     expect(screen.getByText("Another task")).toBeInTheDocument();
   });
+
+  it("calls onRemove with the id of the row whose Delete was clicked", async () => {
+    const user = userEvent.setup();
+    const onRemove = vi.fn();
+    render(<TodoList todos={TODOS} onRemove={onRemove} />);
+
+    await user.click(screen.getByRole("button", { name: "Delete Done task" }));
+
+    expect(onRemove).toHaveBeenCalledTimes(1);
+    expect(onRemove).toHaveBeenCalledWith(TODOS[1].id);
+  });
 });

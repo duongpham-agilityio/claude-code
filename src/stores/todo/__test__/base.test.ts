@@ -63,4 +63,22 @@ describe("useTodoStore", () => {
       "Renamed",
     ]);
   });
+
+  it("removeTodo removes the todo from the store", () => {
+    const other: Todo = { id: "other-id", title: "Other", done: true };
+    useTodoStore.setState({ todos: [TODO, other] });
+
+    useTodoStore.getState().removeTodo(TODO.id);
+
+    expect(useTodoStore.getState().todos).toEqual([other]);
+  });
+
+  it("removeTodo throws and keeps todos when the id is unknown", () => {
+    useTodoStore.setState({ todos: [TODO] });
+
+    expect(() => useTodoStore.getState().removeTodo("missing-id")).toThrow(
+      "Could not delete the todo. Please try again.",
+    );
+    expect(useTodoStore.getState().todos).toEqual([TODO]);
+  });
 });
