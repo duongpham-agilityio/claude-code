@@ -4,7 +4,7 @@ import { TodoForm, TodoList } from "@/components/todo";
 // Hooks
 import { useTodoList } from "@/hooks/todo";
 
-function App() {
+const App = () => {
   const { todos, addTodo, updateTodo, removeTodo, toggleTodo } = useTodoList();
 
   return (
@@ -19,6 +19,6 @@ function App() {
       />
     </main>
   );
-}
+};
 
 export default App;
