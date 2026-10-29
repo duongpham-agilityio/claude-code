@@ -89,7 +89,7 @@ describe("App", () => {
     const items = screen.getAllByRole("listitem");
     expect(items).toHaveLength(4);
     expect(
-      items.map((item) => item.textContent?.replace(/EditRemove$/, "")),
+      items.map((item) => item.textContent?.replace(/EditDelete$/, "")),
     ).toEqual(["C", "A", "B", "A"]);
   });
 
@@ -121,5 +121,48 @@ describe("App", () => {
     expect(alertSpy).toHaveBeenCalledWith("boom");
     expect(screen.getByText("No todos yet")).toBeInTheDocument();
     expect(input).toHaveValue("Buy milk");
+  });
+
+  it("deletes only the clicked todo", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const FIRST = "11111111-1111-4111-8111-111111111111";
+    const SECOND = "22222222-2222-4222-8222-222222222222";
+    act(() => {
+      useTodoStore.setState({
+        todos: [
+          { id: FIRST, title: "Same", done: false },
+          { id: SECOND, title: "Same", done: false },
+        ],
+      });
+    });
+
+    await user.click(screen.getAllByRole("button", { name: "Delete Same" })[0]);
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+    expect(useTodoStore.getState().todos.map((todo) => todo.id)).toEqual([
+      SECOND,
+    ]);
+  });
+
+  it("shows No todos yet after the last todo is deleted", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    act(() => {
+      useTodoStore.setState({
+        todos: [
+          {
+            id: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+            title: "Buy milk",
+            done: false,
+          },
+        ],
+      });
+    });
+
+    await user.click(screen.getByRole("button", { name: "Delete Buy milk" }));
+
+    expect(screen.getByText("No todos yet")).toBeInTheDocument();
+    expect(screen.queryByRole("list")).toBeNull();
   });
 });

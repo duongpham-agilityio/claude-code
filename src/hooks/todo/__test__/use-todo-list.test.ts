@@ -90,4 +90,42 @@ describe("useTodoList", () => {
     expect(alertSpy).toHaveBeenCalledWith("boom");
     expect(result.current.todos).toEqual([]);
   });
+
+  it("removeTodo removes that todo only", () => {
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+    const other: Todo = {
+      id: "0a1b2c3d-4e5f-4a6b-9c7d-8e9f0a1b2c3d",
+      title: "Walk dog",
+      done: true,
+    };
+    const { result } = renderHook(() => useTodoList());
+    act(() => {
+      useTodoStore.setState({ todos: [TODO, other] });
+    });
+
+    act(() => {
+      result.current.removeTodo(TODO.id);
+    });
+
+    expect(result.current.todos).toEqual([other]);
+    expect(alertSpy).not.toHaveBeenCalled();
+  });
+
+  it("removeTodo alerts the delete error and keeps the list when the id is unknown", () => {
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+    const { result } = renderHook(() => useTodoList());
+    act(() => {
+      useTodoStore.setState({ todos: [TODO] });
+    });
+
+    act(() => {
+      result.current.removeTodo("missing-id");
+    });
+
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    expect(alertSpy).toHaveBeenCalledWith(
+      "Could not delete the todo. Please try again.",
+    );
+    expect(result.current.todos).toEqual([TODO]);
+  });
 });
