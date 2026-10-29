@@ -13,12 +13,14 @@ export const useTodoList = () => {
     addTodo: addTodoToStore,
     updateTodo,
     removeTodo: removeTodoFromStore,
+    toggleTodo,
   } = useTodoStore(
     useShallow((state) => ({
       todos: state.todos,
       addTodo: state.addTodo,
       updateTodo: state.updateTodo,
       removeTodo: state.removeTodo,
+      toggleTodo: state.toggleTodo,
     })),
   );
 
@@ -40,5 +42,5 @@ export const useTodoList = () => {
     }
   };
 
-  return { todos, addTodo, updateTodo, removeTodo };
+  return { todos, addTodo, updateTodo, removeTodo, toggleTodo };
 };

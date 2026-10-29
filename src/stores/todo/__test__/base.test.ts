@@ -64,6 +64,15 @@ describe("useTodoStore", () => {
     ]);
   });
 
+  it("toggleTodo sets done on the matching todo", () => {
+    useTodoStore.getState().addTodo("Buy milk");
+    const id = useTodoStore.getState().todos[0].id;
+
+    useTodoStore.getState().toggleTodo(id, true);
+
+    expect(useTodoStore.getState().todos[0].done).toBe(true);
+  });
+
   it("removeTodo removes the todo from the store", () => {
     const other: Todo = { id: "other-id", title: "Other", done: true };
     useTodoStore.setState({ todos: [TODO, other] });
