@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, userEvent, within } from "storybook/test";
+import { expect, fn, spyOn, userEvent, within } from "storybook/test";
 
 import { TodoItem } from "./index";
 
@@ -70,13 +70,40 @@ export const Delete: Story = {
     },
   },
   play: async ({ canvasElement, args }) => {
+    const confirmSpy = spyOn(window, "confirm").mockReturnValue(true);
     const canvas = within(canvasElement);
     await userEvent.click(
       canvas.getByRole("button", { name: "Delete Learn React" }),
     );
+    await expect(confirmSpy).toHaveBeenCalledWith(
+      'Delete "Learn React"? This action cannot be undone.',
+    );
     await expect(args.onRemove).toHaveBeenCalledWith(
       "44444444-4444-4444-8444-444444444444",
     );
+    confirmSpy.mockRestore();
+  },
+};
+
+export const DeleteCancelled: Story = {
+  args: {
+    todo: {
+      id: "66666666-6666-4666-8666-666666666666",
+      title: "Learn React",
+      done: false,
+    },
+  },
+  play: async ({ canvasElement, args }) => {
+    const confirmSpy = spyOn(window, "confirm").mockReturnValue(false);
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Delete Learn React" }),
+    );
+    await expect(confirmSpy).toHaveBeenCalledWith(
+      'Delete "Learn React"? This action cannot be undone.',
+    );
+    await expect(args.onRemove).not.toHaveBeenCalled();
+    confirmSpy.mockRestore();
   },
 };
 

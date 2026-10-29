@@ -125,6 +125,7 @@ describe("App", () => {
 
   it("deletes only the clicked todo", async () => {
     const user = userEvent.setup();
+    vi.spyOn(window, "confirm").mockReturnValue(true);
     render(<App />);
     const FIRST = "11111111-1111-4111-8111-111111111111";
     const SECOND = "22222222-2222-4222-8222-222222222222";
@@ -147,6 +148,7 @@ describe("App", () => {
 
   it("shows No todos yet after the last todo is deleted", async () => {
     const user = userEvent.setup();
+    vi.spyOn(window, "confirm").mockReturnValue(true);
     render(<App />);
     act(() => {
       useTodoStore.setState({
@@ -164,5 +166,27 @@ describe("App", () => {
 
     expect(screen.getByText("No todos yet")).toBeInTheDocument();
     expect(screen.queryByRole("list")).toBeNull();
+  });
+
+  it("keeps the todo when the delete confirmation is cancelled", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    render(<App />);
+    act(() => {
+      useTodoStore.setState({
+        todos: [
+          {
+            id: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+            title: "Buy milk",
+            done: false,
+          },
+        ],
+      });
+    });
+
+    await user.click(screen.getByRole("button", { name: "Delete Buy milk" }));
+
+    expect(screen.getByText("Buy milk")).toBeInTheDocument();
+    expect(useTodoStore.getState().todos).toHaveLength(1);
   });
 });

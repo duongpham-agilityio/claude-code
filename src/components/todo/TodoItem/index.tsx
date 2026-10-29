@@ -43,6 +43,13 @@ export const TodoItem = (props: TodoItemProps) => {
     setIsEditing(false);
   };
 
+  const handleRemove = (): void => {
+    const message = `Delete "${props.todo.title}"? This action cannot be undone.`;
+    if (window.confirm(message)) {
+      props.onRemove?.(props.todo.id);
+    }
+  };
+
   const titleClass = `${TITLE_BOX_CLASS} border-transparent ${
     props.todo.done ? "line-through text-gray-500" : "text-gray-900"
   }`;
@@ -107,7 +114,7 @@ export const TodoItem = (props: TodoItemProps) => {
         <button
           type="button"
           aria-label={`Delete ${props.todo.title}`}
-          onClick={() => props.onRemove?.(props.todo.id)}
+          onClick={handleRemove}
           className={BUTTON_CLASS}
         >
           Delete

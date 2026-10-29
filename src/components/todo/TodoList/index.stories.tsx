@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { expect, fn, userEvent, within } from "storybook/test";
+import { expect, fn, spyOn, userEvent, within } from "storybook/test";
 
 import { TodoList } from "./index";
 
@@ -77,12 +77,14 @@ export const WithRemove: Story = {
   },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
+    const confirmSpy = spyOn(window, "confirm").mockReturnValue(true);
     await userEvent.click(
       canvas.getByRole("button", { name: "Delete Write plan" }),
     );
     await expect(args.onRemove).toHaveBeenCalledWith(
       "9b2f1c3a-5d4e-4f6a-8b7c-1d2e3f4a5b6c",
     );
+    confirmSpy.mockRestore();
   },
 };
 
