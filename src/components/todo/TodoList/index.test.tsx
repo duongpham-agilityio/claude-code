@@ -7,7 +7,10 @@ import type { Todo } from "@/types/todo";
 
 import { TodoList } from "./index";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 const TODOS: Todo[] = [
   {
@@ -119,6 +122,7 @@ describe("TodoList", () => {
   it("calls onRemove with the id of the row whose Delete was clicked", async () => {
     const user = userEvent.setup();
     const onRemove = vi.fn();
+    vi.spyOn(window, "confirm").mockReturnValue(true);
     render(<TodoList todos={TODOS} onRemove={onRemove} />);
 
     await user.click(screen.getByRole("button", { name: "Delete Done task" }));

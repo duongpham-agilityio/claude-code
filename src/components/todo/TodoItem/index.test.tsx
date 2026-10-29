@@ -7,7 +7,13 @@ import type { Todo } from "@/types/todo";
 
 import { TodoItem } from "./index";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
+
+const mockConfirm = (answer: boolean) =>
+  vi.spyOn(window, "confirm").mockReturnValue(answer);
 
 const TODO: Todo = {
   id: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
@@ -146,11 +152,71 @@ describe("TodoItem", () => {
   });
 
   it("calls onRemove with the id when Delete is clicked", async () => {
+    mockConfirm(true);
     const { onRemove } = setup();
 
     await userEvent.click(screen.getByRole("button", { name: /delete/i }));
 
     expect(onRemove).toHaveBeenCalledWith(TODO.id);
+  });
+
+  it("asks for confirmation with the todo title before deleting", async () => {
+    const confirmSpy = mockConfirm(true);
+    setup();
+
+    await userEvent.click(screen.getByRole("button", { name: /delete/i }));
+
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    expect(confirmSpy).toHaveBeenCalledWith(
+      'Delete "Learn React"? This action cannot be undone.',
+    );
+  });
+
+  it("does not call onRemove when the user cancels the confirmation", async () => {
+    mockConfirm(false);
+    const { onRemove } = setup();
+
+    await userEvent.click(screen.getByRole("button", { name: /delete/i }));
+
+    expect(onRemove).not.toHaveBeenCalled();
+    expect(screen.getByText("Learn React")).toBeInTheDocument();
+  });
+
+  it("confirms and removes while editing, using the saved title not the draft", async () => {
+    const confirmSpy = mockConfirm(true);
+    const { onRemove } = setup();
+
+    await userEvent.click(screen.getByRole("button", { name: /edit/i }));
+    await userEvent.type(screen.getByRole("textbox"), "x");
+    await userEvent.click(screen.getByRole("button", { name: /delete/i }));
+
+    expect(confirmSpy).toHaveBeenCalledWith(
+      'Delete "Learn React"? This action cannot be undone.',
+    );
+    expect(onRemove).toHaveBeenCalledWith(TODO.id);
+  });
+
+  it("keeps edit mode and the draft when deletion is cancelled while editing", async () => {
+    mockConfirm(false);
+    const { onRemove } = setup();
+
+    await userEvent.click(screen.getByRole("button", { name: /edit/i }));
+    await userEvent.type(screen.getByRole("textbox"), "x");
+    await userEvent.click(screen.getByRole("button", { name: /delete/i }));
+
+    expect(onRemove).not.toHaveBeenCalled();
+    expect(screen.getByRole("textbox")).toHaveValue("Learn Reactx");
+  });
+
+  it("passes quotes in the title through to the confirmation message", async () => {
+    const confirmSpy = mockConfirm(true);
+    setup({ ...TODO, title: 'Say "hi"' });
+
+    await userEvent.click(screen.getByRole("button", { name: /delete/i }));
+
+    expect(confirmSpy).toHaveBeenCalledWith(
+      'Delete "Say "hi""? This action cannot be undone.',
+    );
   });
 
   it("names the Delete button after the todo for screen readers", () => {
@@ -162,6 +228,7 @@ describe("TodoItem", () => {
   });
 
   it("renders without callbacks and does not throw on click", async () => {
+    mockConfirm(true);
     render(
       <ul>
         <TodoItem todo={TODO} />
