@@ -8,6 +8,7 @@ export interface TodoListProps {
   todos: Todo[];
   onEdit?: (id: Todo["id"], title: Todo["title"]) => void;
   onRemove?: (id: Todo["id"]) => void;
+  onToggle?: (id: Todo["id"], done: boolean) => void;
 }
 
 export const TodoList = (props: TodoListProps) => {
@@ -23,6 +24,7 @@ export const TodoList = (props: TodoListProps) => {
           todo={todo}
           onEdit={props.onEdit}
           onRemove={props.onRemove}
+          onToggle={props.onToggle}
         />
       ))}
     </ul>

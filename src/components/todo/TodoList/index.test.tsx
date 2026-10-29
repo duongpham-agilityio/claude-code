@@ -126,4 +126,32 @@ describe("TodoList", () => {
     expect(onRemove).toHaveBeenCalledTimes(1);
     expect(onRemove).toHaveBeenCalledWith(TODOS[1].id);
   });
+
+  it("calls onToggle with the id and the new checked state", async () => {
+    const user = userEvent.setup();
+    const onToggle = vi.fn();
+    render(<TodoList todos={TODOS} onToggle={onToggle} />);
+
+    await user.click(screen.getByRole("checkbox", { name: "Open task" }));
+
+    expect(onToggle).toHaveBeenCalledTimes(1);
+    expect(onToggle).toHaveBeenCalledWith(
+      "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      true,
+    );
+  });
+
+  it("calls onToggle with false when a done todo is unchecked", async () => {
+    const user = userEvent.setup();
+    const onToggle = vi.fn();
+    render(<TodoList todos={TODOS} onToggle={onToggle} />);
+
+    await user.click(screen.getByRole("checkbox", { name: "Done task" }));
+
+    expect(onToggle).toHaveBeenCalledTimes(1);
+    expect(onToggle).toHaveBeenCalledWith(
+      "9b2f1c3a-5d4e-4f6a-8b7c-1d2e3f4a5b6c",
+      false,
+    );
+  });
 });

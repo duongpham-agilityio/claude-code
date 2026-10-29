@@ -10,7 +10,7 @@ export interface TodoItemProps {
   onRemove?: (id: Todo["id"]) => void;
 }
 
-// Label and input share this box (border, padding, line height) so switching
+// Title text and input share this box (border, padding, line height) so switching
 // between them does not change the row height.
 const TITLE_BOX_CLASS =
   "min-w-32 flex-1 truncate rounded border px-2 py-1 text-lg leading-7";
@@ -51,8 +51,7 @@ export const TodoItem = (props: TodoItemProps) => {
     <li className="flex flex-wrap items-center gap-4 rounded-2xl bg-white px-6 py-5 shadow-md scheme-light">
       <input
         type="checkbox"
-        id={props.todo.id}
-        aria-label={isEditing ? props.todo.title : undefined}
+        aria-label={props.todo.title}
         checked={props.todo.done}
         onChange={(event) =>
           props.onToggle?.(props.todo.id, event.target.checked)
@@ -76,13 +75,9 @@ export const TodoItem = (props: TodoItemProps) => {
           className={`${TITLE_BOX_CLASS} border-gray-300 text-gray-900`}
         />
       ) : (
-        <label
-          htmlFor={props.todo.id}
-          title={props.todo.title}
-          className={titleClass}
-        >
+        <span title={props.todo.title} className={titleClass}>
           {props.todo.title}
-        </label>
+        </span>
       )}
       <div className="ml-auto flex shrink-0 items-center justify-end gap-2">
         {isEditing ? (

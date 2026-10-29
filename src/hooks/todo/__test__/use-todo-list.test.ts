@@ -74,6 +74,19 @@ describe("useTodoList", () => {
     ]);
   });
 
+  it("toggleTodo marks the todo as done", () => {
+    const { result } = renderHook(() => useTodoList());
+    act(() => {
+      useTodoStore.setState({ todos: [TODO] });
+    });
+
+    act(() => {
+      result.current.toggleTodo(TODO.id, true);
+    });
+
+    expect(result.current.todos[0].done).toBe(true);
+  });
+
   it("addTodo alerts and returns false when adding throws", () => {
     const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
     vi.spyOn(crypto, "randomUUID").mockImplementation(() => {

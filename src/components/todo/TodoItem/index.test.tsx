@@ -62,6 +62,17 @@ describe("TodoItem", () => {
     expect(onToggle).toHaveBeenCalledWith(TODO.id, true);
   });
 
+  it("does not call onToggle when the title text is clicked", async () => {
+    const { onToggle } = setup();
+
+    await userEvent.click(screen.getByText("Learn React"));
+
+    expect(onToggle).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole("checkbox", { name: "Learn React" }),
+    ).not.toBeChecked();
+  });
+
   it("switches to an input with the title plus Save and Cancel when Edit is clicked", async () => {
     setup();
 

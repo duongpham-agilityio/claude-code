@@ -93,3 +93,18 @@ export const LongTitle: Story = {
     await expect(item.scrollWidth).toBeLessThanOrEqual(item.clientWidth);
   },
 };
+
+export const ClickTitleDoesNotToggle: Story = {
+  args: {
+    todo: {
+      id: "55555555-5555-4555-8555-555555555555",
+      title: "Learn React",
+      done: false,
+    },
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByText("Learn React"));
+    await expect(args.onToggle).not.toHaveBeenCalled();
+  },
+};
