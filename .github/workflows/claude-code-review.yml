@@ -2,8 +2,16 @@ name: Code Review
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
+
+# Cancel the previous review when the PR gets a new commit, to avoid duplicate reviews and wasted runs
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   review:
+    # PRs are created as drafts by default: skip drafts, review once marked ready for review
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     permissions:
       contents: read
