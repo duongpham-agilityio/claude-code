@@ -5,9 +5,14 @@ on:
     types: [opened, synchronize, ready_for_review, reopened]
     branches: [develop]
 
+# Cancel the previous review when the PR gets a new commit, to avoid duplicate reviews
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   review:
-    # Skip draft PRs and forks (secrets are not available to forks)
+    # Skip draft PRs (review runs when marked ready for review) and forks (secrets are not available to forks)
     if: >-
       github.event.pull_request.draft == false &&
       github.event.pull_request.head.repo.full_name == github.repository
@@ -26,10 +31,11 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          plugin_marketplaces: "https://github.com/anthropics/claude-plugins-official.git"
-          plugins: "code-review@claude-plugins-official"
-          prompt: "/code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
-          # Required: starts the MCP server that posts inline comments
+          plugin_marketplaces: https://github.com/anthropics/claude-code.git
+          plugins: code-review@claude-code-plugins
+          # --comment: post the review on the PR (without it the result only appears in the run log)
+          prompt: /code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
+          # Required so the action starts the MCP server that posts inline comments
           claude_args: |
             --model claude-sonnet-5-5
             --max-turns 25
