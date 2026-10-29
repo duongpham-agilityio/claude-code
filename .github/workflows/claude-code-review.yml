@@ -3,32 +3,30 @@ name: Claude Code Review
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
-    branches: [develop]
 
-# Cancel the previous review when the PR gets a new commit, to avoid duplicate reviews
+# Cancel the previous review when the PR gets a new commit, to avoid duplicate reviews and wasted runs
 concurrency:
   group: claude-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  review:
-    # Skip draft PRs (review runs when marked ready for review) and forks (secrets are not available to forks)
-    if: >-
-      github.event.pull_request.draft == false &&
-      github.event.pull_request.head.repo.full_name == github.repository
+  claude-review:
+    # PRs are created as drafts by default: skip drafts, review once marked ready for review
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     permissions:
       contents: read
       pull-requests: read
       issues: read
       id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - uses: anthropics/claude-code-action@v1
+      - name: Run Claude Code Review
+        uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: https://github.com/anthropics/claude-code.git
@@ -36,7 +34,4 @@ jobs:
           # --comment: post the review on the PR (without it the result only appears in the run log)
           prompt: /code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
           # Required so the action starts the MCP server that posts inline comments
-          claude_args: |
-            --model claude-sonnet-5-5
-            --max-turns 25
-            --allowedTools "mcp__github_inline_comment__create_inline_comment"
+          claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment"'
