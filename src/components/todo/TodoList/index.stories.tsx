@@ -113,3 +113,26 @@ export const WithToggle: Story = {
     );
   },
 };
+
+export const WithReorder: Story = {
+  args: {
+    todos: [
+      {
+        id: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+        title: "Buy milk",
+        done: false,
+      },
+      {
+        id: "9b2f1c3a-5d4e-4f6a-8b7c-1d2e3f4a5b6c",
+        title: "Write plan",
+        done: true,
+      },
+      {
+        id: "0a1b2c3d-4e5f-4a6b-9c7d-8e9f0a1b2c3d",
+        title: "Review PR",
+        done: false,
+      },
+    ],
+    onReorder: fn(),
+  },
+};

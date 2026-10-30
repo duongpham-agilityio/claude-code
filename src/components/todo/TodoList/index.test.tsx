@@ -159,3 +159,58 @@ describe("TodoList", () => {
     );
   });
 });
+
+// jsdom has no layout, so give each row a rect for dnd-kit keyboard coordinates.
+const mockRowRects = () => {
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+    function (this: HTMLElement) {
+      const row = Array.from(this.ownerDocument.querySelectorAll("li")).indexOf(
+        this as HTMLLIElement,
+      );
+      const top = Math.max(row, 0) * 100;
+      return new DOMRect(0, top, 300, 80);
+    },
+  );
+};
+
+describe("TodoList reorder", () => {
+  it("calls onReorder with page-relative indexes after a keyboard move", async () => {
+    const user = userEvent.setup();
+    const onReorder = vi.fn();
+    mockRowRects();
+    render(<TodoList todos={TODOS} pageStart={3} onReorder={onReorder} />);
+
+    screen.getByRole("button", { name: "Reorder Open task" }).focus();
+    await user.keyboard(" ");
+    await user.keyboard("{ArrowDown}");
+    await user.keyboard(" ");
+
+    expect(onReorder).toHaveBeenCalledWith(3, 0, 1);
+  });
+
+  it("does not reorder when the item is dropped back in place", async () => {
+    const user = userEvent.setup();
+    const onReorder = vi.fn();
+    render(<TodoList todos={TODOS} onReorder={onReorder} />);
+
+    screen.getByRole("button", { name: "Reorder Open task" }).focus();
+    await user.keyboard(" ");
+    await user.keyboard(" ");
+
+    expect(onReorder).not.toHaveBeenCalled();
+  });
+
+  it("keeps toggle working next to the handle", async () => {
+    const user = userEvent.setup();
+    const onToggle = vi.fn();
+    const onReorder = vi.fn();
+    render(
+      <TodoList todos={TODOS} onToggle={onToggle} onReorder={onReorder} />,
+    );
+
+    await user.click(screen.getByRole("checkbox", { name: "Open task" }));
+
+    expect(onToggle).toHaveBeenCalledWith(TODOS[0].id, true);
+    expect(onReorder).not.toHaveBeenCalled();
+  });
+});
