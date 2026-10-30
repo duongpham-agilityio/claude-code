@@ -1,12 +1,16 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+// Constants
+import { TODO_PAGE_SIZE } from "@/constants";
+
 // Types
 import type { Todo } from "@/types/todo";
 
 import { createTodo } from "./create-todo";
 import { clampPage } from "./paginate-todos";
 import { removeTodo } from "./remove-todo";
+import { reorderTodos } from "./reorder-todo";
 import { toggleTodoDone } from "./toggle-todo";
 import { updateTodoTitle } from "./update-todo";
 
@@ -18,6 +22,7 @@ export interface TodoState {
   updateTodo: (id: Todo["id"], title: Todo["title"]) => void;
   removeTodo: (id: Todo["id"]) => void;
   toggleTodo: (id: Todo["id"], done: boolean) => void;
+  reorderTodo: (fromIndex: number, toIndex: number) => void;
 }
 
 export const TODO_STORAGE_KEY = "todo-store";
@@ -61,6 +66,14 @@ export const useTodoStore = create<TodoState>()(
         }),
       toggleTodo: (id, done) =>
         set((state) => ({ todos: toggleTodoDone(state.todos, id, done) })),
+      reorderTodo: (fromIndex, toIndex) =>
+        set((state) => {
+          const pageStart = (state.currentPage - 1) * TODO_PAGE_SIZE;
+
+          return {
+            todos: reorderTodos(state.todos, pageStart, fromIndex, toIndex),
+          };
+        }),
     }),
     {
       name: TODO_STORAGE_KEY,

@@ -139,6 +139,50 @@ describe("useTodoStore", () => {
     expect(useTodoStore.getState().todos[0].title).toBe("New");
   });
 
+  it("reorderTodo moves a todo within the first page", () => {
+    useTodoStore.setState({ todos: makeTodos(8) });
+
+    useTodoStore.getState().reorderTodo(0, 2);
+
+    expect(useTodoStore.getState().todos.map((todo) => todo.id)).toEqual([
+      "id-2",
+      "id-3",
+      "id-1",
+      "id-4",
+      "id-5",
+      "id-6",
+      "id-7",
+      "id-8",
+    ]);
+  });
+
+  it("reorderTodo uses the current page offset", () => {
+    useTodoStore.setState({ todos: makeTodos(8), currentPage: 2 });
+
+    useTodoStore.getState().reorderTodo(0, 2);
+
+    expect(useTodoStore.getState().todos.map((todo) => todo.id)).toEqual([
+      "id-1",
+      "id-2",
+      "id-3",
+      "id-4",
+      "id-5",
+      "id-7",
+      "id-8",
+      "id-6",
+    ]);
+  });
+
+  it("reorderTodo keeps todos and currentPage for an out-of-range index", () => {
+    const todos = makeTodos(8);
+    useTodoStore.setState({ todos, currentPage: 2 });
+
+    useTodoStore.getState().reorderTodo(0, 4);
+
+    expect(useTodoStore.getState().todos).toBe(todos);
+    expect(useTodoStore.getState().currentPage).toBe(2);
+  });
+
   it("removeTodo throws and keeps todos when the id is unknown", () => {
     useTodoStore.setState({ todos: [TODO] });
 

@@ -64,6 +64,32 @@ describe("useTodoStore persistence", () => {
     });
   });
 
+  it("keeps the reordered todos across rehydrate", async () => {
+    useTodoStore.setState({
+      todos: [
+        { id: "a", title: "A", done: false },
+        { id: "b", title: "B", done: false },
+        { id: "c", title: "C", done: false },
+      ],
+    });
+
+    useTodoStore.getState().reorderTodo(0, 2);
+    const saved = JSON.parse(localStorage.getItem(TODO_STORAGE_KEY) ?? "null");
+    expect(saved.state.todos.map((todo: { id: string }) => todo.id)).toEqual([
+      "b",
+      "c",
+      "a",
+    ]);
+
+    await useTodoStore.persist.rehydrate();
+
+    expect(useTodoStore.getState().todos.map((todo) => todo.id)).toEqual([
+      "b",
+      "c",
+      "a",
+    ]);
+  });
+
   it("starts empty when stored JSON is corrupt", async () => {
     localStorage.setItem(TODO_STORAGE_KEY, "{not json");
 
