@@ -158,4 +158,52 @@ describe("TodoList", () => {
       false,
     );
   });
+
+  it("reorders with the keyboard through the drag handle", async () => {
+    // jsdom has no layout: stack the rows so keyboard coordinates can find targets.
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+      function (this: HTMLElement) {
+        const items = Array.from(document.querySelectorAll("li"));
+        const top = Math.max(items.indexOf(this as HTMLLIElement), 0) * 100;
+        return new DOMRect(0, top, 300, 80);
+      },
+    );
+    const onReorder = vi.fn();
+    render(<TodoList todos={TODOS} onReorder={onReorder} />);
+
+    const handle = screen.getByRole("button", { name: "Reorder Open task" });
+    handle.focus();
+    await userEvent.keyboard(" ");
+    await userEvent.keyboard("{ArrowDown}");
+    await userEvent.keyboard(" ");
+
+    expect(onReorder).toHaveBeenCalledWith(0, 1);
+  });
+
+  it("does not reorder when the item is dropped where it started", async () => {
+    const onReorder = vi.fn();
+    render(<TodoList todos={TODOS} onReorder={onReorder} />);
+
+    screen.getByRole("button", { name: "Reorder Open task" }).focus();
+    await userEvent.keyboard(" ");
+    await userEvent.keyboard(" ");
+
+    expect(onReorder).not.toHaveBeenCalled();
+  });
+
+  it("does not start a drag when clicking the checkbox or buttons", async () => {
+    const onReorder = vi.fn();
+    const onToggle = vi.fn();
+    render(
+      <TodoList todos={TODOS} onReorder={onReorder} onToggle={onToggle} />,
+    );
+
+    await userEvent.click(screen.getByRole("checkbox", { name: "Open task" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Edit Open task" }),
+    );
+
+    expect(onToggle).toHaveBeenCalledWith(TODOS[0].id, true);
+    expect(onReorder).not.toHaveBeenCalled();
+  });
 });

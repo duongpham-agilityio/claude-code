@@ -90,4 +90,22 @@ describe("useTodoStore", () => {
     );
     expect(useTodoStore.getState().todos).toEqual([TODO]);
   });
+
+  it("reorderTodo moves a todo by page offset and keeps the rest in order", () => {
+    const todos = ["A", "B", "C", "D"].map((title) => ({
+      id: `id-${title}`,
+      title,
+      done: false,
+    }));
+    useTodoStore.setState({ todos });
+
+    useTodoStore.getState().reorderTodo(2, 0, 1);
+
+    expect(useTodoStore.getState().todos.map((todo) => todo.title)).toEqual([
+      "A",
+      "B",
+      "D",
+      "C",
+    ]);
+  });
 });

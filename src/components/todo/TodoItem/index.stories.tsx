@@ -135,3 +135,19 @@ export const ClickTitleDoesNotToggle: Story = {
     await expect(args.onToggle).not.toHaveBeenCalled();
   },
 };
+
+export const WithDragHandle: Story = {
+  args: {
+    todo: {
+      id: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      title: "Learn React",
+      done: false,
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(
+      canvas.getByRole("button", { name: "Reorder Learn React" }),
+    ).toBeVisible();
+  },
+};
