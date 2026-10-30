@@ -1,14 +1,10 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-// Constants
-import { TODO_PAGE_SIZE } from "@/constants";
-
 // Types
 import type { Todo } from "@/types/todo";
 
 import { createTodo } from "./create-todo";
-import { clampPage } from "./paginate-todos";
 import { removeTodo } from "./remove-todo";
 import { reorderTodos } from "./reorder-todo";
 import { toggleTodoDone } from "./toggle-todo";
@@ -16,13 +12,11 @@ import { updateTodoTitle } from "./update-todo";
 
 export interface TodoState {
   todos: Todo[];
-  currentPage: number;
-  setPage: (page: number) => void;
   addTodo: (title: string) => void;
   updateTodo: (id: Todo["id"], title: Todo["title"]) => void;
   removeTodo: (id: Todo["id"]) => void;
   toggleTodo: (id: Todo["id"], done: boolean) => void;
-  reorderTodo: (fromIndex: number, toIndex: number) => void;
+  reorderTodo: (pageStart: number, fromIndex: number, toIndex: number) => void;
 }
 
 export const TODO_STORAGE_KEY = "todo-store";
@@ -45,35 +39,18 @@ export const useTodoStore = create<TodoState>()(
   persist(
     (set) => ({
       todos: [],
-      currentPage: 1,
-      setPage: (page) =>
-        set((state) => ({ currentPage: clampPage(page, state.todos.length) })),
       addTodo: (title) =>
-        set((state) => ({
-          todos: [createTodo(title), ...state.todos],
-          currentPage: 1,
-        })),
+        set((state) => ({ todos: [createTodo(title), ...state.todos] })),
       updateTodo: (id, title) =>
         set((state) => ({ todos: updateTodoTitle(state.todos, id, title) })),
       removeTodo: (id) =>
-        set((state) => {
-          const todos = removeTodo(state.todos, id);
-
-          return {
-            todos,
-            currentPage: clampPage(state.currentPage, todos.length),
-          };
-        }),
+        set((state) => ({ todos: removeTodo(state.todos, id) })),
       toggleTodo: (id, done) =>
         set((state) => ({ todos: toggleTodoDone(state.todos, id, done) })),
-      reorderTodo: (fromIndex, toIndex) =>
-        set((state) => {
-          const pageStart = (state.currentPage - 1) * TODO_PAGE_SIZE;
-
-          return {
-            todos: reorderTodos(state.todos, pageStart, fromIndex, toIndex),
-          };
-        }),
+      reorderTodo: (pageStart, fromIndex, toIndex) =>
+        set((state) => ({
+          todos: reorderTodos(state.todos, pageStart, fromIndex, toIndex),
+        })),
     }),
     {
       name: TODO_STORAGE_KEY,

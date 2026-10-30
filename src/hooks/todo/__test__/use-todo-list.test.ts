@@ -187,7 +187,10 @@ describe("useTodoList", () => {
   it("reorderTodo moves a todo within the current page of the full list", () => {
     const { result } = renderHook(() => useTodoList());
     act(() => {
-      useTodoStore.setState({ todos: makeTodos(8), currentPage: 2 });
+      useTodoStore.setState({ todos: makeTodos(8) });
+    });
+    act(() => {
+      result.current.setPage(2);
     });
 
     act(() => {
@@ -211,14 +214,37 @@ describe("useTodoList", () => {
     ]);
   });
 
-  it("clamps the page when the stored page is past the last page", () => {
+  it("addTodo goes back to page 1 so the new todo is visible", () => {
     const { result } = renderHook(() => useTodoList());
+    act(() => {
+      useTodoStore.setState({ todos: makeTodos(12) });
+    });
+    act(() => {
+      result.current.setPage(3);
+    });
 
     act(() => {
-      useTodoStore.setState({ todos: makeTodos(6), currentPage: 9 });
+      result.current.addTodo("Fresh");
+    });
+
+    expect(result.current.currentPage).toBe(1);
+    expect(result.current.pagedTodos[0].title).toBe("Fresh");
+  });
+
+  it("moves back to the last valid page when the last todo of the last page is removed", () => {
+    const { result } = renderHook(() => useTodoList());
+    act(() => {
+      useTodoStore.setState({ todos: makeTodos(11) });
+    });
+    act(() => {
+      result.current.setPage(3);
+    });
+
+    act(() => {
+      result.current.removeTodo("id-11");
     });
 
     expect(result.current.currentPage).toBe(2);
-    expect(result.current.pagedTodos).toHaveLength(1);
+    expect(result.current.pagedTodos).toHaveLength(5);
   });
 });
