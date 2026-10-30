@@ -14,6 +14,7 @@ export const useTodoList = () => {
     updateTodo,
     removeTodo: removeTodoFromStore,
     toggleTodo,
+    reorderTodo,
   } = useTodoStore(
     useShallow((state) => ({
       todos: state.todos,
@@ -21,6 +22,7 @@ export const useTodoList = () => {
       updateTodo: state.updateTodo,
       removeTodo: state.removeTodo,
       toggleTodo: state.toggleTodo,
+      reorderTodo: state.reorderTodo,
     })),
   );
 
@@ -42,5 +44,5 @@ export const useTodoList = () => {
     }
   };
 
-  return { todos, addTodo, updateTodo, removeTodo, toggleTodo };
+  return { todos, addTodo, updateTodo, removeTodo, toggleTodo, reorderTodo };
 };

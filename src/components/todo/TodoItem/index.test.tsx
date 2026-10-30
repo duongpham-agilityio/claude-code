@@ -242,3 +242,13 @@ describe("TodoItem", () => {
     expect(screen.getByRole("listitem")).toBeInTheDocument();
   });
 });
+
+describe("TodoItem drag handle", () => {
+  it("renders a labelled reorder handle", () => {
+    setup();
+
+    expect(
+      screen.getByRole("button", { name: "Reorder Learn React" }),
+    ).toBeInTheDocument();
+  });
+});

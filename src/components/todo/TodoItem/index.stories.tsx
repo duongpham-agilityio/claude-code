@@ -24,6 +24,22 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+export const WithHandle: Story = {
+  args: {
+    todo: {
+      id: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      title: "Buy milk",
+      done: false,
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(
+      canvas.getByRole("button", { name: "Reorder Buy milk" }),
+    ).toBeVisible();
+  },
+};
+
 export const NotDone: Story = {
   args: {
     todo: {
