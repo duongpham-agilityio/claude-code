@@ -1,64 +1,192 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
-import { App } from './App'
+import "@testing-library/jest-dom/vitest";
+import { act, cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-afterEach(cleanup)
+import { useTodoStore } from "@/stores/todo";
 
-const login = (email: string) => {
-  render(<App />)
-  fireEvent.change(screen.getByLabelText('Email'), { target: { value: email } })
-  fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'anything' } })
-  fireEvent.click(screen.getByRole('button', { name: 'Login' }))
-}
+import App from "./App";
 
-describe('App login', () => {
-  it('shows error for wrong email and keeps the form', () => {
-    login('wrong@test.com')
-    expect(screen.getByText('Invalid email')).toBeTruthy()
-    expect(screen.queryByText('welcome to my app')).toBeNull()
-    expect(screen.getByRole('button', { name: 'Login' })).toBeTruthy()
-  })
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+  useTodoStore.setState(useTodoStore.getInitialState());
+});
 
-  it('shows welcome and hides form for valid email', () => {
-    login('admin@test.com')
-    expect(screen.getByText('welcome to my app')).toBeTruthy()
-    expect(screen.queryByRole('button', { name: 'Login' })).toBeNull()
-    expect(screen.queryByLabelText('Email')).toBeNull()
-  })
+describe("App", () => {
+  it("shows the app heading and the empty state", () => {
+    render(<App />);
 
-  it('trims whitespace around the email', () => {
-    login('  admin@test.com  ')
-    expect(screen.getByText('welcome to my app')).toBeTruthy()
-  })
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Todo Practice" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("No todos yet")).toBeInTheDocument();
+  });
 
-  it('accepts the email regardless of case', () => {
-    login('Admin@Test.com')
-    expect(screen.getByText('welcome to my app')).toBeTruthy()
-  })
+  it("renders todos from the store", () => {
+    render(<App />);
 
-  it('shows error for a malformed email', () => {
-    login('abc')
-    expect(screen.getByText('Invalid email')).toBeTruthy()
-  })
+    act(() => {
+      useTodoStore.setState({
+        todos: [
+          {
+            id: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+            title: "Buy milk",
+            done: false,
+          },
+          {
+            id: "9b2f1c3a-5d4e-4f6a-8b7c-1d2e3f4a5b6c",
+            title: "Write plan",
+            done: true,
+          },
+        ],
+      });
+    });
 
-  it('shows error for an empty email', () => {
-    login('')
-    expect(screen.getByText('Invalid email')).toBeTruthy()
-  })
+    expect(screen.getByRole("list")).toBeInTheDocument();
+    expect(screen.getAllByRole("listitem")).toHaveLength(2);
+    expect(screen.getByText("Buy milk")).toBeInTheDocument();
+    expect(screen.getByText("Write plan")).toBeInTheDocument();
+  });
 
-  it('shows error for an empty password', () => {
-    render(<App />)
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'admin@test.com' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Login' }))
-    expect(screen.getByText('Password is required')).toBeTruthy()
-    expect(screen.queryByText('welcome to my app')).toBeNull()
-  })
+  it("adds a todo via the Add button and shows it in the list", async () => {
+    const user = userEvent.setup();
+    render(<App />);
 
-  it('clears the error after a failed attempt followed by a success', () => {
-    login('wrong@test.com')
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'admin@test.com' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Login' }))
-    expect(screen.queryByText('Invalid email')).toBeNull()
-    expect(screen.getByText('welcome to my app')).toBeTruthy()
-  })
-})
+    const input = screen.getByRole("textbox", { name: "New todo" });
+    await user.type(input, "  Buy milk  ");
+    await user.click(screen.getByRole("button", { name: "Add" }));
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+    expect(screen.getByText("Buy milk")).toBeInTheDocument();
+    expect(input).toHaveValue("");
+    expect(screen.queryByText("No todos yet")).not.toBeInTheDocument();
+  });
+
+  it("adds a todo via Enter", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(
+      screen.getByRole("textbox", { name: "New todo" }),
+      "Write plan{Enter}",
+    );
+
+    expect(screen.getByText("Write plan")).toBeInTheDocument();
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+  });
+
+  it("shows the newest todo first and allows duplicate titles", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const input = screen.getByRole("textbox", { name: "New todo" });
+    await user.type(input, "A{Enter}");
+    await user.type(input, "B{Enter}");
+    await user.type(input, "A{Enter}");
+    await user.type(input, "C{Enter}");
+
+    const items = screen.getAllByRole("listitem");
+    expect(items).toHaveLength(4);
+    expect(
+      items.map((item) => item.textContent?.replace(/EditDelete$/, "")),
+    ).toEqual(["C", "A", "B", "A"]);
+  });
+
+  it("does not add a whitespace-only title", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+
+    await user.type(screen.getByRole("textbox", { name: "New todo" }), "   ");
+
+    expect(screen.getByRole("button", { name: "Add" })).toBeDisabled();
+    await user.keyboard("{Enter}");
+    expect(screen.getByText("No todos yet")).toBeInTheDocument();
+    expect(alertSpy).not.toHaveBeenCalled();
+  });
+
+  it("alerts, adds nothing and keeps the typed value when adding throws", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+    vi.spyOn(crypto, "randomUUID").mockImplementation(() => {
+      throw new Error("boom");
+    });
+
+    const input = screen.getByRole("textbox", { name: "New todo" });
+    await user.type(input, "Buy milk{Enter}");
+
+    expect(alertSpy).toHaveBeenCalledWith("boom");
+    expect(screen.getByText("No todos yet")).toBeInTheDocument();
+    expect(input).toHaveValue("Buy milk");
+  });
+
+  it("deletes only the clicked todo", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    render(<App />);
+    const FIRST = "11111111-1111-4111-8111-111111111111";
+    const SECOND = "22222222-2222-4222-8222-222222222222";
+    act(() => {
+      useTodoStore.setState({
+        todos: [
+          { id: FIRST, title: "Same", done: false },
+          { id: SECOND, title: "Same", done: false },
+        ],
+      });
+    });
+
+    await user.click(screen.getAllByRole("button", { name: "Delete Same" })[0]);
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+    expect(useTodoStore.getState().todos.map((todo) => todo.id)).toEqual([
+      SECOND,
+    ]);
+  });
+
+  it("shows No todos yet after the last todo is deleted", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    render(<App />);
+    act(() => {
+      useTodoStore.setState({
+        todos: [
+          {
+            id: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+            title: "Buy milk",
+            done: false,
+          },
+        ],
+      });
+    });
+
+    await user.click(screen.getByRole("button", { name: "Delete Buy milk" }));
+
+    expect(screen.getByText("No todos yet")).toBeInTheDocument();
+    expect(screen.queryByRole("list")).toBeNull();
+  });
+
+  it("keeps the todo when the delete confirmation is cancelled", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    render(<App />);
+    act(() => {
+      useTodoStore.setState({
+        todos: [
+          {
+            id: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+            title: "Buy milk",
+            done: false,
+          },
+        ],
+      });
+    });
+
+    await user.click(screen.getByRole("button", { name: "Delete Buy milk" }));
+
+    expect(screen.getByText("Buy milk")).toBeInTheDocument();
+    expect(useTodoStore.getState().todos).toHaveLength(1);
+  });
+});
