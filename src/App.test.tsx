@@ -189,4 +189,93 @@ describe("App", () => {
     expect(screen.getByText("Buy milk")).toBeInTheDocument();
     expect(useTodoStore.getState().todos).toHaveLength(1);
   });
+
+  it("shows 5 of 12 todos and navigates between pages", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    act(() => {
+      useTodoStore.setState({
+        todos: Array.from({ length: 12 }, (_, index) => ({
+          id: `id-${index + 1}`,
+          title: `Task ${index + 1}`,
+          done: false,
+        })),
+      });
+    });
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(5);
+    expect(screen.getByText("Task 1")).toBeInTheDocument();
+    expect(screen.queryByText("Task 6")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Next" }));
+    expect(screen.getByText("Task 6")).toBeInTheDocument();
+    expect(screen.queryByText("Task 1")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "3" }));
+    expect(screen.getAllByRole("listitem")).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+  });
+
+  it("hides the pagination for 5 or fewer todos", () => {
+    render(<App />);
+    act(() => {
+      useTodoStore.setState({
+        todos: Array.from({ length: 5 }, (_, index) => ({
+          id: `id-${index + 1}`,
+          title: `Task ${index + 1}`,
+          done: false,
+        })),
+      });
+    });
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(5);
+    expect(screen.queryByRole("navigation")).toBeNull();
+  });
+
+  it("goes back to the new todo on page 1 after adding from another page", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    act(() => {
+      useTodoStore.setState({
+        todos: Array.from({ length: 12 }, (_, index) => ({
+          id: `id-${index + 1}`,
+          title: `Task ${index + 1}`,
+          done: false,
+        })),
+        currentPage: 3,
+      });
+    });
+
+    await user.type(
+      screen.getByRole("textbox", { name: "New todo" }),
+      "Fresh{Enter}",
+    );
+
+    expect(screen.getByText("Fresh")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "1" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+  });
+
+  it("moves to the previous page when the last todo of the last page is deleted", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    render(<App />);
+    act(() => {
+      useTodoStore.setState({
+        todos: Array.from({ length: 6 }, (_, index) => ({
+          id: `id-${index + 1}`,
+          title: `Task ${index + 1}`,
+          done: false,
+        })),
+        currentPage: 2,
+      });
+    });
+
+    await user.click(screen.getByRole("button", { name: "Delete Task 6" }));
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(5);
+    expect(screen.queryByRole("navigation")).toBeNull();
+  });
 });

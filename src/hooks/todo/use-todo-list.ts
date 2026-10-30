@@ -2,7 +2,7 @@
 import { useShallow } from "zustand/react/shallow";
 
 // Stores
-import { useTodoStore } from "@/stores/todo";
+import { paginateTodos, useTodoStore } from "@/stores/todo";
 
 // Types
 import type { Todo } from "@/types/todo";
@@ -10,6 +10,8 @@ import type { Todo } from "@/types/todo";
 export const useTodoList = () => {
   const {
     todos,
+    page,
+    setPage,
     addTodo: addTodoToStore,
     updateTodo,
     removeTodo: removeTodoFromStore,
@@ -17,12 +19,16 @@ export const useTodoList = () => {
   } = useTodoStore(
     useShallow((state) => ({
       todos: state.todos,
+      page: state.currentPage,
+      setPage: state.setPage,
       addTodo: state.addTodo,
       updateTodo: state.updateTodo,
       removeTodo: state.removeTodo,
       toggleTodo: state.toggleTodo,
     })),
   );
+
+  const { pagedTodos, currentPage, totalPages } = paginateTodos(todos, page);
 
   const addTodo = (title: string): boolean => {
     try {
@@ -42,5 +48,15 @@ export const useTodoList = () => {
     }
   };
 
-  return { todos, addTodo, updateTodo, removeTodo, toggleTodo };
+  return {
+    todos,
+    pagedTodos,
+    currentPage,
+    totalPages,
+    setPage,
+    addTodo,
+    updateTodo,
+    removeTodo,
+    toggleTodo,
+  };
 };

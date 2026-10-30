@@ -11,6 +11,13 @@ const TODO: Todo = {
   done: false,
 };
 
+const makeTodos = (count: number): Todo[] =>
+  Array.from({ length: count }, (_, index) => ({
+    id: `id-${index + 1}`,
+    title: `Todo ${index + 1}`,
+    done: false,
+  }));
+
 afterEach(() => {
   vi.restoreAllMocks();
   useTodoStore.setState(useTodoStore.getInitialState());
@@ -140,5 +147,51 @@ describe("useTodoList", () => {
       "Could not delete the todo. Please try again.",
     );
     expect(result.current.todos).toEqual([TODO]);
+  });
+
+  it("returns only the first page of todos with page info", () => {
+    const { result } = renderHook(() => useTodoList());
+
+    act(() => {
+      useTodoStore.setState({ todos: makeTodos(12) });
+    });
+
+    expect(result.current.pagedTodos.map((todo) => todo.id)).toEqual([
+      "id-1",
+      "id-2",
+      "id-3",
+      "id-4",
+      "id-5",
+    ]);
+    expect(result.current.currentPage).toBe(1);
+    expect(result.current.totalPages).toBe(3);
+  });
+
+  it("setPage moves to another page slice", () => {
+    const { result } = renderHook(() => useTodoList());
+    act(() => {
+      useTodoStore.setState({ todos: makeTodos(12) });
+    });
+
+    act(() => {
+      result.current.setPage(3);
+    });
+
+    expect(result.current.currentPage).toBe(3);
+    expect(result.current.pagedTodos.map((todo) => todo.id)).toEqual([
+      "id-11",
+      "id-12",
+    ]);
+  });
+
+  it("clamps the page when the stored page is past the last page", () => {
+    const { result } = renderHook(() => useTodoList());
+
+    act(() => {
+      useTodoStore.setState({ todos: makeTodos(6), currentPage: 9 });
+    });
+
+    expect(result.current.currentPage).toBe(2);
+    expect(result.current.pagedTodos).toHaveLength(1);
   });
 });
