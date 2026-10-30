@@ -242,9 +242,9 @@ describe("App", () => {
           title: `Task ${index + 1}`,
           done: false,
         })),
-        currentPage: 3,
       });
     });
+    await user.click(screen.getByRole("button", { name: "3" }));
 
     await user.type(
       screen.getByRole("textbox", { name: "New todo" }),
@@ -269,9 +269,9 @@ describe("App", () => {
           title: `Task ${index + 1}`,
           done: false,
         })),
-        currentPage: 2,
       });
     });
+    await user.click(screen.getByRole("button", { name: "2" }));
 
     await user.click(screen.getByRole("button", { name: "Delete Task 6" }));
 

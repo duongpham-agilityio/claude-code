@@ -32,3 +32,6 @@ The todo list shows 5 todos per page with a Prev / Next / page-number control (h
 - `pnpm test`, `pnpm lint`, `pnpm build` all exit 0
 - Each acceptance criterion (12 todos 5/5/2, edge disabling, hidden at 5 or fewer, clamp after remove, add on top of page 1, reload resets to page 1) is covered by a passing test
 - UI touched: `preview_start` the `storybook` config, check the `Pagination` stories, no console errors, screenshot taken
+
+## Deviations
+- Steps 1-4, 8: after review, pagination logic moved out of the store. `paginate` helpers live in `src/utils`, state in the reusable `usePagination` hook (`src/hooks/shared`); `useTodoList` uses it, and the store only keeps todos.

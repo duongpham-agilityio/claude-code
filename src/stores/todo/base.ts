@@ -5,15 +5,12 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type { Todo } from "@/types/todo";
 
 import { createTodo } from "./create-todo";
-import { clampPage } from "./paginate-todos";
 import { removeTodo } from "./remove-todo";
 import { toggleTodoDone } from "./toggle-todo";
 import { updateTodoTitle } from "./update-todo";
 
 export interface TodoState {
   todos: Todo[];
-  currentPage: number;
-  setPage: (page: number) => void;
   addTodo: (title: string) => void;
   updateTodo: (id: Todo["id"], title: Todo["title"]) => void;
   removeTodo: (id: Todo["id"]) => void;
@@ -40,25 +37,12 @@ export const useTodoStore = create<TodoState>()(
   persist(
     (set) => ({
       todos: [],
-      currentPage: 1,
-      setPage: (page) =>
-        set((state) => ({ currentPage: clampPage(page, state.todos.length) })),
       addTodo: (title) =>
-        set((state) => ({
-          todos: [createTodo(title), ...state.todos],
-          currentPage: 1,
-        })),
+        set((state) => ({ todos: [createTodo(title), ...state.todos] })),
       updateTodo: (id, title) =>
         set((state) => ({ todos: updateTodoTitle(state.todos, id, title) })),
       removeTodo: (id) =>
-        set((state) => {
-          const todos = removeTodo(state.todos, id);
-
-          return {
-            todos,
-            currentPage: clampPage(state.currentPage, todos.length),
-          };
-        }),
+        set((state) => ({ todos: removeTodo(state.todos, id) })),
       toggleTodo: (id, done) =>
         set((state) => ({ todos: toggleTodoDone(state.todos, id, done) })),
     }),
