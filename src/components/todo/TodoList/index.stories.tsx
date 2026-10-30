@@ -88,6 +88,39 @@ export const WithRemove: Story = {
   },
 };
 
+export const WithReorder: Story = {
+  args: {
+    todos: [
+      {
+        id: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+        title: "Buy milk",
+        done: false,
+      },
+      {
+        id: "9b2f1c3a-5d4e-4f6a-8b7c-1d2e3f4a5b6c",
+        title: "Write plan",
+        done: true,
+      },
+      {
+        id: "0a1b2c3d-4e5f-4a6b-9c7d-8e9f0a1b2c3d",
+        title: "Walk dog",
+        done: false,
+      },
+    ],
+    onReorder: fn(),
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    canvas
+      .getByRole("button", { name: "Drag to reorder Buy milk" })
+      .focus();
+    await userEvent.keyboard(" ");
+    await userEvent.keyboard("{ArrowDown}");
+    await userEvent.keyboard(" ");
+    await expect(args.onReorder).toHaveBeenCalledWith(0, 1);
+  },
+};
+
 export const WithToggle: Story = {
   args: {
     todos: [

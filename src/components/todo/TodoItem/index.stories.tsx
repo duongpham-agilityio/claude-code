@@ -34,6 +34,22 @@ export const NotDone: Story = {
   },
 };
 
+export const WithDragHandle: Story = {
+  args: {
+    todo: {
+      id: "77777777-7777-4777-8777-777777777777",
+      title: "Learn React",
+      done: false,
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(
+      canvas.getByRole("button", { name: "Drag to reorder Learn React" }),
+    ).toBeVisible();
+  },
+};
+
 export const Done: Story = {
   args: {
     todo: {

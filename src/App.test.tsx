@@ -216,6 +216,57 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
   });
 
+  it("reorders a todo on page 2 by keyboard and keeps other pages in place", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+      function (this: HTMLElement) {
+        const items = Array.from(document.querySelectorAll("li"));
+        const top = Math.max(0, items.indexOf(this as HTMLLIElement)) * 100;
+
+        return {
+          x: 0,
+          y: top,
+          top,
+          bottom: top + 80,
+          left: 0,
+          right: 300,
+          width: 300,
+          height: 80,
+          toJSON: () => ({}),
+        };
+      },
+    );
+    render(<App />);
+    act(() => {
+      useTodoStore.setState({
+        todos: Array.from({ length: 8 }, (_, index) => ({
+          id: `id-${index + 1}`,
+          title: `Task ${index + 1}`,
+          done: false,
+        })),
+        currentPage: 2,
+      });
+    });
+
+    screen
+      .getByRole("button", { name: "Drag to reorder Task 6" })
+      .focus();
+    await user.keyboard(" ");
+    await user.keyboard("{ArrowDown}");
+    await user.keyboard(" ");
+
+    expect(useTodoStore.getState().todos.map((todo) => todo.id)).toEqual([
+      "id-1",
+      "id-2",
+      "id-3",
+      "id-4",
+      "id-5",
+      "id-7",
+      "id-6",
+      "id-8",
+    ]);
+  });
+
   it("hides the pagination for 5 or fewer todos", () => {
     render(<App />);
     act(() => {

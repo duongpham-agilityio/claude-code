@@ -15,6 +15,7 @@ const App = () => {
     updateTodo,
     removeTodo,
     toggleTodo,
+    reorderTodo,
   } = useTodoList();
 
   return (
@@ -26,6 +27,7 @@ const App = () => {
         onEdit={updateTodo}
         onRemove={removeTodo}
         onToggle={toggleTodo}
+        onReorder={reorderTodo}
       />
       <Pagination
         currentPage={currentPage}

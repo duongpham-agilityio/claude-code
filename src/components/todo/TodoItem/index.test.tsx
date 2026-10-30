@@ -227,6 +227,32 @@ describe("TodoItem", () => {
     ).toHaveTextContent(/^Delete$/);
   });
 
+  it("shows a drag handle named after the todo", () => {
+    setup();
+
+    expect(
+      screen.getByRole("button", { name: "Drag to reorder Learn React" }),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps the checkbox, Edit and Delete working next to the drag handle", async () => {
+    mockConfirm(true);
+    const { onToggle, onRemove } = setup();
+
+    await userEvent.click(screen.getByRole("checkbox"));
+    await userEvent.click(screen.getByRole("button", { name: /^edit/i }));
+    expect(screen.getByRole("textbox", { name: "Todo title" })).toHaveValue(
+      "Learn React",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Delete Learn React" }),
+    );
+
+    expect(onToggle).toHaveBeenCalledWith(TODO.id, true);
+    expect(onRemove).toHaveBeenCalledWith(TODO.id);
+  });
+
   it("renders without callbacks and does not throw on click", async () => {
     mockConfirm(true);
     render(

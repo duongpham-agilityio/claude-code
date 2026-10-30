@@ -30,6 +30,29 @@ const TODOS: Todo[] = [
   },
 ];
 
+// jsdom has no layout: give every list item a distinct vertical box so the
+// keyboard sensor can find the item below the active one.
+const mockLayout = () => {
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+    function (this: HTMLElement) {
+      const items = Array.from(document.querySelectorAll("li"));
+      const top = Math.max(0, items.indexOf(this as HTMLLIElement)) * 100;
+
+      return {
+        x: 0,
+        y: top,
+        top,
+        bottom: top + 80,
+        left: 0,
+        right: 300,
+        width: 300,
+        height: 80,
+        toJSON: () => ({}),
+      };
+    },
+  );
+};
+
 describe("TodoList", () => {
   it("shows the empty message and no list when there are no todos", () => {
     render(<TodoList todos={[]} />);
@@ -143,6 +166,39 @@ describe("TodoList", () => {
       "7c9e6679-7425-40de-944b-e07fc1f90ae7",
       true,
     );
+  });
+
+  it("calls onReorder with page indexes after a keyboard move down", async () => {
+    const user = userEvent.setup();
+    const onReorder = vi.fn();
+    mockLayout();
+    render(<TodoList todos={TODOS} onReorder={onReorder} />);
+
+    screen
+      .getByRole("button", { name: "Drag to reorder Open task" })
+      .focus();
+    await user.keyboard(" ");
+    await user.keyboard("{ArrowDown}");
+    await user.keyboard(" ");
+
+    expect(onReorder).toHaveBeenCalledTimes(1);
+    expect(onReorder).toHaveBeenCalledWith(0, 1);
+  });
+
+  it("does not call onReorder when the keyboard drag is cancelled", async () => {
+    const user = userEvent.setup();
+    const onReorder = vi.fn();
+    mockLayout();
+    render(<TodoList todos={TODOS} onReorder={onReorder} />);
+
+    screen
+      .getByRole("button", { name: "Drag to reorder Open task" })
+      .focus();
+    await user.keyboard(" ");
+    await user.keyboard("{ArrowDown}");
+    await user.keyboard("{Escape}");
+
+    expect(onReorder).not.toHaveBeenCalled();
   });
 
   it("calls onToggle with false when a done todo is unchecked", async () => {

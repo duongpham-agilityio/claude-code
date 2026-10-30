@@ -184,6 +184,33 @@ describe("useTodoList", () => {
     ]);
   });
 
+  it("reorderTodo moves a todo within the current page of the full list", () => {
+    const { result } = renderHook(() => useTodoList());
+    act(() => {
+      useTodoStore.setState({ todos: makeTodos(8), currentPage: 2 });
+    });
+
+    act(() => {
+      result.current.reorderTodo(0, 2);
+    });
+
+    expect(result.current.todos.map((todo) => todo.id)).toEqual([
+      "id-1",
+      "id-2",
+      "id-3",
+      "id-4",
+      "id-5",
+      "id-7",
+      "id-8",
+      "id-6",
+    ]);
+    expect(result.current.pagedTodos.map((todo) => todo.id)).toEqual([
+      "id-7",
+      "id-8",
+      "id-6",
+    ]);
+  });
+
   it("clamps the page when the stored page is past the last page", () => {
     const { result } = renderHook(() => useTodoList());
 
