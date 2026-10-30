@@ -189,4 +189,45 @@ describe("App", () => {
     expect(screen.getByText("Buy milk")).toBeInTheDocument();
     expect(useTodoStore.getState().todos).toHaveLength(1);
   });
+
+  it("shows 5 todos per page with pagination and switches slices", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    act(() => {
+      useTodoStore.setState({
+        todos: Array.from({ length: 12 }, (_, index) => ({
+          id: `id-${index + 1}`,
+          title: `Todo ${index + 1}`,
+          done: false,
+        })),
+      });
+    });
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(5);
+    expect(screen.getByText("Todo 1")).toBeInTheDocument();
+    expect(
+      screen.getByRole("navigation", { name: "Pagination" }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "3" }));
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(2);
+    expect(screen.getByText("Todo 11")).toBeInTheDocument();
+    expect(screen.queryByText("Todo 1")).not.toBeInTheDocument();
+  });
+
+  it("hides pagination for 5 or fewer todos", () => {
+    render(<App />);
+    act(() => {
+      useTodoStore.setState({
+        todos: Array.from({ length: 5 }, (_, index) => ({
+          id: `id-${index + 1}`,
+          title: `Todo ${index + 1}`,
+          done: false,
+        })),
+      });
+    });
+
+    expect(screen.queryByRole("navigation", { name: "Pagination" })).toBeNull();
+  });
 });

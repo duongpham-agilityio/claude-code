@@ -90,4 +90,48 @@ describe("useTodoStore", () => {
     );
     expect(useTodoStore.getState().todos).toEqual([TODO]);
   });
+
+  it("starts on page 1", () => {
+    expect(useTodoStore.getInitialState().currentPage).toBe(1);
+  });
+
+  it("setPage sets the current page", () => {
+    useTodoStore.getState().setPage(3);
+
+    expect(useTodoStore.getState().currentPage).toBe(3);
+  });
+
+  it("removeTodo moves to the last valid page when the last page empties", () => {
+    const todos: Todo[] = Array.from({ length: 6 }, (_, index) => ({
+      id: `id-${index + 1}`,
+      title: `Todo ${index + 1}`,
+      done: false,
+    }));
+    useTodoStore.setState({ todos, currentPage: 2 });
+
+    useTodoStore.getState().removeTodo("id-6");
+
+    expect(useTodoStore.getState().currentPage).toBe(1);
+  });
+
+  it("removeTodo keeps the current page when it is still valid", () => {
+    const todos: Todo[] = Array.from({ length: 7 }, (_, index) => ({
+      id: `id-${index + 1}`,
+      title: `Todo ${index + 1}`,
+      done: false,
+    }));
+    useTodoStore.setState({ todos, currentPage: 2 });
+
+    useTodoStore.getState().removeTodo("id-7");
+
+    expect(useTodoStore.getState().currentPage).toBe(2);
+  });
+
+  it("addTodo resets the current page to 1", () => {
+    useTodoStore.setState({ currentPage: 3 });
+
+    useTodoStore.getState().addTodo("New");
+
+    expect(useTodoStore.getState().currentPage).toBe(1);
+  });
 });

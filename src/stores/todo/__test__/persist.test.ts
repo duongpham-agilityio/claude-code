@@ -11,8 +11,7 @@ beforeEach(reset);
 
 afterEach(reset);
 
-const store = (state: unknown) =>
-  JSON.stringify({ state, version: 0 });
+const store = (state: unknown) => JSON.stringify({ state, version: 0 });
 
 describe("useTodoStore persistence", () => {
   it("writes todos to localStorage under TODO_STORAGE_KEY after addTodo", () => {
@@ -75,5 +74,21 @@ describe("useTodoStore persistence", () => {
     await useTodoStore.persist.rehydrate();
 
     expect(useTodoStore.getState().todos).toEqual([valid]);
+  });
+
+  it("does not persist currentPage and starts on page 1 after reload", async () => {
+    useTodoStore.getState().addTodo("Buy milk");
+    useTodoStore.getState().setPage(4);
+
+    const saved = JSON.parse(localStorage.getItem(TODO_STORAGE_KEY) ?? "null");
+    expect(Object.keys(saved.state)).toEqual(["todos"]);
+
+    useTodoStore.setState({ currentPage: 4 });
+    await useTodoStore.persist.rehydrate();
+
+    expect(useTodoStore.getState().currentPage).toBe(4);
+    useTodoStore.setState(useTodoStore.getInitialState());
+    await useTodoStore.persist.rehydrate();
+    expect(useTodoStore.getState().currentPage).toBe(1);
   });
 });
