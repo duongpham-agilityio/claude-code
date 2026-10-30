@@ -141,4 +141,55 @@ describe("useTodoList", () => {
     );
     expect(result.current.todos).toEqual([TODO]);
   });
+
+  describe("pagination", () => {
+    const makeTodos = (count: number): Todo[] =>
+      Array.from({ length: count }, (_, index) => ({
+        id: `id-${index + 1}`,
+        title: `Todo ${index + 1}`,
+        done: false,
+      }));
+
+    it("returns the first 5 todos on page 1 with the total pages", () => {
+      const { result } = renderHook(() => useTodoList());
+      act(() => {
+        useTodoStore.setState({ todos: makeTodos(12) });
+      });
+
+      expect(result.current.currentPage).toBe(1);
+      expect(result.current.totalPages).toBe(3);
+      expect(result.current.pagedTodos.map((todo) => todo.id)).toEqual([
+        "id-1",
+        "id-2",
+        "id-3",
+        "id-4",
+        "id-5",
+      ]);
+      expect(result.current.todos).toHaveLength(12);
+    });
+
+    it("setPage shows the todos of that page", () => {
+      const { result } = renderHook(() => useTodoList());
+      act(() => {
+        useTodoStore.setState({ todos: makeTodos(12) });
+      });
+
+      act(() => {
+        result.current.setPage(3);
+      });
+
+      expect(result.current.currentPage).toBe(3);
+      expect(result.current.pagedTodos.map((todo) => todo.id)).toEqual([
+        "id-11",
+        "id-12",
+      ]);
+    });
+
+    it("has one page and no todos when the list is empty", () => {
+      const { result } = renderHook(() => useTodoList());
+
+      expect(result.current.totalPages).toBe(1);
+      expect(result.current.pagedTodos).toEqual([]);
+    });
+  });
 });

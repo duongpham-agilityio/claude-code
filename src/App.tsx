@@ -1,21 +1,35 @@
 // Components
-import { TodoForm, TodoList } from "@/components/todo";
+import { Pagination, TodoForm, TodoList } from "@/components/todo";
 
 // Hooks
 import { useTodoList } from "@/hooks/todo";
 
 const App = () => {
-  const { todos, addTodo, updateTodo, removeTodo, toggleTodo } = useTodoList();
+  const {
+    pagedTodos,
+    currentPage,
+    totalPages,
+    setPage,
+    addTodo,
+    updateTodo,
+    removeTodo,
+    toggleTodo,
+  } = useTodoList();
 
   return (
     <main className="flex w-full flex-1 flex-col gap-4 bg-gray-100 p-6 text-left scheme-light [--text-h:var(--color-gray-900)]">
       <h1>Todo Practice</h1>
       <TodoForm onAdd={addTodo} />
       <TodoList
-        todos={todos}
+        todos={pagedTodos}
         onEdit={updateTodo}
         onRemove={removeTodo}
         onToggle={toggleTodo}
+      />
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setPage}
       />
     </main>
   );

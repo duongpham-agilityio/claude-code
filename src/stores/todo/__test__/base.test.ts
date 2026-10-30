@@ -9,6 +9,13 @@ const TODO: Todo = {
   done: false,
 };
 
+const makeTodos = (count: number): Todo[] =>
+  Array.from({ length: count }, (_, index) => ({
+    id: `id-${index + 1}`,
+    title: `Todo ${index + 1}`,
+    done: false,
+  }));
+
 afterEach(() => {
   useTodoStore.setState(useTodoStore.getInitialState());
 });
@@ -89,5 +96,68 @@ describe("useTodoStore", () => {
       "Could not delete the todo. Please try again.",
     );
     expect(useTodoStore.getState().todos).toEqual([TODO]);
+  });
+
+  it("starts on page 1", () => {
+    expect(useTodoStore.getInitialState().currentPage).toBe(1);
+  });
+
+  it("setPage moves to a valid page", () => {
+    useTodoStore.setState({ todos: makeTodos(12) });
+
+    useTodoStore.getState().setPage(2);
+
+    expect(useTodoStore.getState().currentPage).toBe(2);
+  });
+
+  it("setPage clamps out-of-range pages", () => {
+    useTodoStore.setState({ todos: makeTodos(12) });
+
+    useTodoStore.getState().setPage(99);
+    expect(useTodoStore.getState().currentPage).toBe(3);
+
+    useTodoStore.getState().setPage(0);
+    expect(useTodoStore.getState().currentPage).toBe(1);
+  });
+
+  it("addTodo resets the current page to 1", () => {
+    useTodoStore.setState({ todos: makeTodos(12), currentPage: 3 });
+
+    useTodoStore.getState().addTodo("New");
+
+    expect(useTodoStore.getState().currentPage).toBe(1);
+  });
+
+  it("removeTodo of the last todo on the last page moves back one page", () => {
+    useTodoStore.setState({ todos: makeTodos(6), currentPage: 2 });
+
+    useTodoStore.getState().removeTodo("id-6");
+
+    expect(useTodoStore.getState().currentPage).toBe(1);
+  });
+
+  it("removeTodo keeps the page when it is still valid", () => {
+    useTodoStore.setState({ todos: makeTodos(12), currentPage: 2 });
+
+    useTodoStore.getState().removeTodo("id-1");
+
+    expect(useTodoStore.getState().currentPage).toBe(2);
+  });
+
+  it("removeTodo of the only todo leaves the page at 1", () => {
+    useTodoStore.setState({ todos: [TODO], currentPage: 1 });
+
+    useTodoStore.getState().removeTodo(TODO.id);
+
+    expect(useTodoStore.getState().currentPage).toBe(1);
+  });
+
+  it("toggleTodo and updateTodo do not change the page", () => {
+    useTodoStore.setState({ todos: makeTodos(12), currentPage: 2 });
+
+    useTodoStore.getState().toggleTodo("id-7", true);
+    useTodoStore.getState().updateTodo("id-7", "Renamed");
+
+    expect(useTodoStore.getState().currentPage).toBe(2);
   });
 });

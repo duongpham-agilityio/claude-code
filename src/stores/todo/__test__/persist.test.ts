@@ -11,8 +11,7 @@ beforeEach(reset);
 
 afterEach(reset);
 
-const store = (state: unknown) =>
-  JSON.stringify({ state, version: 0 });
+const store = (state: unknown) => JSON.stringify({ state, version: 0 });
 
 describe("useTodoStore persistence", () => {
   it("writes todos to localStorage under TODO_STORAGE_KEY after addTodo", () => {
@@ -75,5 +74,28 @@ describe("useTodoStore persistence", () => {
     await useTodoStore.persist.rehydrate();
 
     expect(useTodoStore.getState().todos).toEqual([valid]);
+  });
+
+  it("does not persist currentPage, so a reload starts on page 1", async () => {
+    useTodoStore.setState({
+      todos: Array.from({ length: 12 }, (_, index) => ({
+        id: `id-${index}`,
+        title: `Todo ${index}`,
+        done: false,
+      })),
+    });
+    useTodoStore.getState().setPage(3);
+
+    const saved = JSON.parse(localStorage.getItem(TODO_STORAGE_KEY) ?? "null");
+    expect(Object.keys(saved.state)).toEqual(["todos"]);
+
+    // Simulate a reload: fresh in-memory state, then rehydrate from storage.
+    const stored = localStorage.getItem(TODO_STORAGE_KEY) ?? "";
+    useTodoStore.setState({ todos: [], currentPage: 1 });
+    localStorage.setItem(TODO_STORAGE_KEY, stored);
+    await useTodoStore.persist.rehydrate();
+
+    expect(useTodoStore.getState().todos).toHaveLength(12);
+    expect(useTodoStore.getState().currentPage).toBe(1);
   });
 });

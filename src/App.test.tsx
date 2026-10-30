@@ -189,4 +189,83 @@ describe("App", () => {
     expect(screen.getByText("Buy milk")).toBeInTheDocument();
     expect(useTodoStore.getState().todos).toHaveLength(1);
   });
+
+  describe("pagination", () => {
+    const seedTodos = (count: number) => {
+      act(() => {
+        useTodoStore.setState({
+          todos: Array.from({ length: count }, (_, index) => ({
+            id: `id-${index + 1}`,
+            title: `Todo ${index + 1}`,
+            done: false,
+          })),
+        });
+      });
+    };
+
+    it("shows 5 todos on page 1 and a pagination control for 12 todos", () => {
+      render(<App />);
+      seedTodos(12);
+
+      expect(screen.getAllByRole("listitem")).toHaveLength(5);
+      expect(screen.getByText("Todo 1")).toBeInTheDocument();
+      expect(screen.queryByText("Todo 6")).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("navigation", { name: "Pagination" }),
+      ).toBeInTheDocument();
+    });
+
+    it("hides the pagination control for 5 or fewer todos", () => {
+      render(<App />);
+      seedTodos(5);
+
+      expect(screen.getAllByRole("listitem")).toHaveLength(5);
+      expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+    });
+
+    it("shows the second page after clicking page 2", async () => {
+      const user = userEvent.setup();
+      render(<App />);
+      seedTodos(12);
+
+      await user.click(screen.getByRole("button", { name: "Page 2" }));
+
+      expect(screen.getAllByRole("listitem")).toHaveLength(5);
+      expect(screen.getByText("Todo 6")).toBeInTheDocument();
+      expect(screen.queryByText("Todo 1")).not.toBeInTheDocument();
+    });
+
+    it("moves to the last page with Next and goes back with Prev", async () => {
+      const user = userEvent.setup();
+      render(<App />);
+      seedTodos(12);
+
+      await user.click(screen.getByRole("button", { name: "Next" }));
+      await user.click(screen.getByRole("button", { name: "Next" }));
+
+      expect(screen.getAllByRole("listitem")).toHaveLength(2);
+      expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+
+      await user.click(screen.getByRole("button", { name: "Prev" }));
+      expect(screen.getByText("Todo 6")).toBeInTheDocument();
+    });
+
+    it("returns to page 1 when a todo is added", async () => {
+      const user = userEvent.setup();
+      render(<App />);
+      seedTodos(12);
+      await user.click(screen.getByRole("button", { name: "Page 3" }));
+
+      await user.type(
+        screen.getByRole("textbox", { name: "New todo" }),
+        "Fresh{Enter}",
+      );
+
+      expect(screen.getByText("Fresh")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Page 1" })).toHaveAttribute(
+        "aria-current",
+        "page",
+      );
+    });
+  });
 });
