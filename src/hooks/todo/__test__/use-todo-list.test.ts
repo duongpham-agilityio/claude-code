@@ -141,4 +141,43 @@ describe("useTodoList", () => {
     );
     expect(result.current.todos).toEqual([TODO]);
   });
+
+  it("exposes the first page of todos with page info", () => {
+    const todos: Todo[] = Array.from({ length: 12 }, (_, index) => ({
+      id: `id-${index + 1}`,
+      title: `Todo ${index + 1}`,
+      done: false,
+    }));
+    const { result } = renderHook(() => useTodoList());
+
+    act(() => {
+      useTodoStore.setState({ todos });
+    });
+
+    expect(result.current.pagedTodos).toHaveLength(5);
+    expect(result.current.currentPage).toBe(1);
+    expect(result.current.totalPages).toBe(3);
+  });
+
+  it("setPage shows the requested slice", () => {
+    const todos: Todo[] = Array.from({ length: 12 }, (_, index) => ({
+      id: `id-${index + 1}`,
+      title: `Todo ${index + 1}`,
+      done: false,
+    }));
+    const { result } = renderHook(() => useTodoList());
+    act(() => {
+      useTodoStore.setState({ todos });
+    });
+
+    act(() => {
+      result.current.setPage(3);
+    });
+
+    expect(result.current.currentPage).toBe(3);
+    expect(result.current.pagedTodos.map((todo) => todo.id)).toEqual([
+      "id-11",
+      "id-12",
+    ]);
+  });
 });
