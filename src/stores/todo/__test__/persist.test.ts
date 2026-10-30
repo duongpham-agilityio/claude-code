@@ -24,6 +24,23 @@ describe("useTodoStore persistence", () => {
     expect(Object.keys(saved.state)).toEqual(["todos"]);
   });
 
+  it("does not persist currentPage and starts on page 1 after rehydrate", async () => {
+    useTodoStore.getState().addTodo("Buy milk");
+    useTodoStore.setState({ currentPage: 3 });
+
+    const saved = JSON.parse(localStorage.getItem(TODO_STORAGE_KEY) ?? "null");
+    expect(saved.state).not.toHaveProperty("currentPage");
+
+    // Simulate a page reload: memory is reset, only localStorage survives
+    const raw = localStorage.getItem(TODO_STORAGE_KEY) ?? "";
+    useTodoStore.setState(useTodoStore.getInitialState());
+    localStorage.setItem(TODO_STORAGE_KEY, raw);
+    await useTodoStore.persist.rehydrate();
+
+    expect(useTodoStore.getState().todos[0].title).toBe("Buy milk");
+    expect(useTodoStore.getState().currentPage).toBe(1);
+  });
+
   it("restores todos from localStorage on rehydrate", async () => {
     const todos = [{ id: "a", title: "Buy milk", done: true }];
     localStorage.setItem(TODO_STORAGE_KEY, store({ todos }));

@@ -9,6 +9,13 @@ const TODO: Todo = {
   done: false,
 };
 
+const makeTodos = (count: number): Todo[] =>
+  Array.from({ length: count }, (_, index) => ({
+    id: `id-${index + 1}`,
+    title: `Todo ${index + 1}`,
+    done: false,
+  }));
+
 afterEach(() => {
   useTodoStore.setState(useTodoStore.getInitialState());
 });
@@ -80,6 +87,56 @@ describe("useTodoStore", () => {
     useTodoStore.getState().removeTodo(TODO.id);
 
     expect(useTodoStore.getState().todos).toEqual([other]);
+  });
+
+  it("starts on page 1", () => {
+    expect(useTodoStore.getInitialState().currentPage).toBe(1);
+  });
+
+  it("setPage changes the current page", () => {
+    useTodoStore.setState({ todos: makeTodos(12) });
+
+    useTodoStore.getState().setPage(2);
+
+    expect(useTodoStore.getState().currentPage).toBe(2);
+  });
+
+  it("setPage clamps to the valid page range", () => {
+    useTodoStore.setState({ todos: makeTodos(12) });
+
+    useTodoStore.getState().setPage(99);
+    expect(useTodoStore.getState().currentPage).toBe(3);
+
+    useTodoStore.getState().setPage(0);
+    expect(useTodoStore.getState().currentPage).toBe(1);
+  });
+
+  it("removeTodo on the last page clamps currentPage when that page empties", () => {
+    const todos = makeTodos(11);
+    useTodoStore.setState({ todos, currentPage: 3 });
+
+    useTodoStore.getState().removeTodo(todos[10].id);
+
+    expect(useTodoStore.getState().todos).toHaveLength(10);
+    expect(useTodoStore.getState().currentPage).toBe(2);
+  });
+
+  it("removeTodo keeps currentPage when the page still has todos", () => {
+    const todos = makeTodos(12);
+    useTodoStore.setState({ todos, currentPage: 3 });
+
+    useTodoStore.getState().removeTodo(todos[0].id);
+
+    expect(useTodoStore.getState().currentPage).toBe(3);
+  });
+
+  it("addTodo resets currentPage to 1", () => {
+    useTodoStore.setState({ todos: makeTodos(12), currentPage: 3 });
+
+    useTodoStore.getState().addTodo("New");
+
+    expect(useTodoStore.getState().currentPage).toBe(1);
+    expect(useTodoStore.getState().todos[0].title).toBe("New");
   });
 
   it("removeTodo throws and keeps todos when the id is unknown", () => {
