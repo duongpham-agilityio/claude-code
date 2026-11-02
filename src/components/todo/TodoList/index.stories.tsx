@@ -113,3 +113,65 @@ export const WithToggle: Story = {
     );
   },
 };
+
+export const Reorderable: Story = {
+  args: {
+    todos: [
+      {
+        id: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+        title: "Buy milk",
+        done: false,
+      },
+      {
+        id: "9b2f1c3a-5d4e-4f6a-8b7c-1d2e3f4a5b6c",
+        title: "Write plan",
+        done: true,
+      },
+      {
+        id: "0a1b2c3d-4e5f-4a6b-9c7d-8e9f0a1b2c3d",
+        title: "Review PR",
+        done: false,
+      },
+    ],
+    onReorder: fn(),
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const handle = canvas.getByRole("button", { name: "Reorder Buy milk" });
+    handle.focus();
+    await userEvent.keyboard(" ");
+    await userEvent.keyboard("{ArrowDown}");
+    await userEvent.keyboard(" ");
+    await expect(args.onReorder).toHaveBeenCalledWith(0, 0, 1);
+  },
+};
+
+const REORDERED_TODOS = [
+  {
+    id: "9b2f1c3a-5d4e-4f6a-8b7c-1d2e3f4a5b6c",
+    title: "Write plan",
+    done: true,
+  },
+  {
+    id: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+    title: "Buy milk",
+    done: false,
+  },
+  {
+    id: "0a1b2c3d-4e5f-4a6b-9c7d-8e9f0a1b2c3d",
+    title: "Review PR",
+    done: false,
+  },
+];
+
+export const Reordered: Story = {
+  args: {
+    todos: REORDERED_TODOS,
+    onReorder: fn(),
+  },
+  play: async ({ canvasElement }) => {
+    const items = within(canvasElement).getAllByRole("listitem");
+    await expect(items[0]).toHaveTextContent("Write plan");
+    await expect(items[1]).toHaveTextContent("Buy milk");
+  },
+};

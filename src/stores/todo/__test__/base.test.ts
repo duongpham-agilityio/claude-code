@@ -90,4 +90,32 @@ describe("useTodoStore", () => {
     );
     expect(useTodoStore.getState().todos).toEqual([TODO]);
   });
+
+  it("reorderTodo moves a todo inside the page", () => {
+    const b: Todo = { id: "b", title: "B", done: false };
+    const c: Todo = { id: "c", title: "C", done: false };
+    useTodoStore.setState({ todos: [TODO, b, c] });
+
+    useTodoStore.getState().reorderTodo(0, 0, 2);
+
+    expect(useTodoStore.getState().todos.map((todo) => todo.id)).toEqual([
+      "b",
+      "c",
+      TODO.id,
+    ]);
+  });
+
+  it("addTodo still puts a new todo on top after a reorder", () => {
+    const b: Todo = { id: "b", title: "B", done: false };
+    useTodoStore.setState({ todos: [TODO, b] });
+
+    useTodoStore.getState().reorderTodo(0, 0, 1);
+    useTodoStore.getState().addTodo("New");
+
+    expect(useTodoStore.getState().todos.map((todo) => todo.title)).toEqual([
+      "New",
+      "B",
+      "Buy milk",
+    ]);
+  });
 });

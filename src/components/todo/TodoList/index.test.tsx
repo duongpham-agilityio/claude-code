@@ -30,6 +30,31 @@ const TODOS: Todo[] = [
   },
 ];
 
+// jsdom has no layout: give every list item its own vertical slot so the
+// keyboard sensor can find the neighbouring item.
+const mockItemRects = () => {
+  vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(
+    function (this: Element) {
+      const item = this.closest("li");
+      const index = item
+        ? Array.from(item.parentElement!.children).indexOf(item)
+        : 0;
+      const top = index * 100;
+      return {
+        x: 0,
+        y: top,
+        top,
+        bottom: top + 80,
+        left: 0,
+        right: 300,
+        width: 300,
+        height: 80,
+        toJSON: () => ({}),
+      };
+    },
+  );
+};
+
 describe("TodoList", () => {
   it("shows the empty message and no list when there are no todos", () => {
     render(<TodoList todos={[]} />);
@@ -157,5 +182,62 @@ describe("TodoList", () => {
       "9b2f1c3a-5d4e-4f6a-8b7c-1d2e3f4a5b6c",
       false,
     );
+  });
+
+  it("calls onReorder with page start and indexes after a keyboard reorder", async () => {
+    const user = userEvent.setup();
+    const onReorder = vi.fn();
+    mockItemRects();
+    render(<TodoList todos={TODOS} onReorder={onReorder} />);
+
+    screen.getByRole("button", { name: "Reorder Open task" }).focus();
+    await user.keyboard(" ");
+    await user.keyboard("{ArrowDown}");
+    await user.keyboard(" ");
+
+    expect(onReorder).toHaveBeenCalledTimes(1);
+    expect(onReorder).toHaveBeenCalledWith(0, 0, 1);
+  });
+
+  it("shifts the reported indexes by pageStart", async () => {
+    const user = userEvent.setup();
+    const onReorder = vi.fn();
+    mockItemRects();
+    render(<TodoList todos={TODOS} pageStart={4} onReorder={onReorder} />);
+
+    screen.getByRole("button", { name: "Reorder Open task" }).focus();
+    await user.keyboard(" ");
+    await user.keyboard("{ArrowDown}");
+    await user.keyboard(" ");
+
+    expect(onReorder).toHaveBeenCalledWith(4, 0, 1);
+  });
+
+  it("does not call onReorder when the drag is cancelled", async () => {
+    const user = userEvent.setup();
+    const onReorder = vi.fn();
+    mockItemRects();
+    render(<TodoList todos={TODOS} onReorder={onReorder} />);
+
+    screen.getByRole("button", { name: "Reorder Open task" }).focus();
+    await user.keyboard(" ");
+    await user.keyboard("{ArrowDown}");
+    await user.keyboard("{Escape}");
+
+    expect(onReorder).not.toHaveBeenCalled();
+  });
+
+  it("does not call onReorder when checkbox, Edit or Delete is clicked", async () => {
+    const user = userEvent.setup();
+    const onReorder = vi.fn();
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    render(<TodoList todos={TODOS} onReorder={onReorder} />);
+
+    await user.click(screen.getByRole("checkbox", { name: "Open task" }));
+    await user.click(screen.getByRole("button", { name: "Edit Open task" }));
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    await user.click(screen.getByRole("button", { name: "Delete Open task" }));
+
+    expect(onReorder).not.toHaveBeenCalled();
   });
 });
