@@ -26,7 +26,7 @@ const main = () => {
   }
   if (!isCommitSkill(input)) return
 
-  const cwd = process.env.CLAUDE_PROJECT_DIR ?? process.cwd()
+  const cwd = input.cwd ?? process.env.CLAUDE_PROJECT_DIR ?? process.cwd()
   for (const step of STEPS) {
     const { ok, output } = runStep(step, cwd)
     if (!ok) {

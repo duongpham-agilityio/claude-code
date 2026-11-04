@@ -4,14 +4,14 @@
     {
       "id": 1,
       "prompt": "/ticket-analysis github ticket #49",
-      "expected_output": "Reference names GitHub as the source, so the skill reads issue 49 itself (MCP GitHub if connected, else gh issue view) without being told to use the CLI. Writes docs/analysis/ticket-49-add-a-new-todo.md with the fixed structure, and the short Vietnamese reply gives the path, question count and the tool used. Requires gh logged in to remote `github`.",
+      "expected_output": "Reference names GitHub as the source, so the skill reads issue 49 itself (MCP GitHub if connected, else gh issue view) without being told to use the CLI. Writes docs/analysis/ticket-49-add-a-new-todo.md with the 4-section structure, and the short Vietnamese reply gives the path, question count and the tool used. Requires gh logged in to remote `github`.",
       "files": [],
       "assertions": [
         "Skill fetched the ticket itself: the transcript shows a GitHub MCP read call or `gh issue view 49` (read-only), and the user was not asked to paste text or name the CLI",
         "Skill did not answer that it has no context for the ticket",
         "docs/analysis/ticket-49-add-a-new-todo.md exists",
-        "Doc starts with `# Ticket 49: Add a new todo` and has `## Analysis` of exactly 3 sentences, then `## Clarifying questions`",
-        "Every numbered question has a `Gap:` line and ends with `Answer: _(pending)_`",
+        "Doc starts with `# Ticket 49: Add a new todo` and has the headings `## What it asks` (with a `Done when:` line), `## What's ambiguous`, `## First step`, `## Clarifying questions` in that order",
+        "Every numbered question has a `Default assumption:` line and ends with `Answer: _(pending)_`",
         "Reply is in short Vietnamese, gives the doc path and the number of questions, and names the tool used (MCP GitHub or gh issue view)",
         "No ticket write was attempted: no `gh issue comment`, `gh issue edit`, `gh issue close` or MCP write call",
         "No git commit, push or PR was made"
@@ -41,7 +41,7 @@
         "Skill did not ask the user where the ticket is managed",
         "docs/analysis/ticket-PROJ-123-export-report-to-csv.md exists (prefix kept in the id, lowercase kebab-case slug)",
         "The literal email address (or any part of it) appears nowhere in the doc; `[redacted]` is used in its place",
-        "Doc has at least 2 numbered questions, each with a `Gap:` line and `Answer: _(pending)_`, ordered highest impact first",
+        "Doc has at least 2 numbered questions, each with a `Default assumption:` line and `Answer: _(pending)_`, ordered highest impact first",
         "At least one question addresses a real gap such as columns/format, row volume, filter or date range, or failure handling",
         "Reply is in short Vietnamese with the doc path, the number of questions and that the ticket was already in the prompt, and does not repeat the doc content"
       ]
@@ -80,7 +80,7 @@
         "No git commit, push or PR was made",
         "No fetch happened and the user was not asked where the ticket is managed",
         "docs/analysis/ticket-PROJ-9-show-total-on-cart-page.md exists with `# Ticket PROJ-9: Show total on cart page`",
-        "Doc is written in English with the `## Analysis` and `## Clarifying questions` headings",
+        "Doc is written in English with the four headings `## What it asks`, `## What's ambiguous`, `## First step`, `## Clarifying questions`",
         "Reply is in short Vietnamese with the doc path and question count"
       ]
     }
