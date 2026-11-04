@@ -11,8 +11,7 @@ beforeEach(reset);
 
 afterEach(reset);
 
-const store = (state: unknown) =>
-  JSON.stringify({ state, version: 0 });
+const store = (state: unknown) => JSON.stringify({ state, version: 0 });
 
 describe("useTodoStore persistence", () => {
   it("writes todos to localStorage under TODO_STORAGE_KEY after addTodo", () => {
@@ -75,5 +74,18 @@ describe("useTodoStore persistence", () => {
     await useTodoStore.persist.rehydrate();
 
     expect(useTodoStore.getState().todos).toEqual([valid]);
+  });
+
+  it("writes the reordered todos to localStorage after reorderTodo", () => {
+    useTodoStore.getState().addTodo("First");
+    useTodoStore.getState().addTodo("Second");
+
+    useTodoStore.getState().reorderTodo(0, 0, 1);
+
+    const saved = JSON.parse(localStorage.getItem(TODO_STORAGE_KEY) ?? "null");
+
+    expect(
+      saved.state.todos.map((todo: { title: string }) => todo.title),
+    ).toEqual(["First", "Second"]);
   });
 });

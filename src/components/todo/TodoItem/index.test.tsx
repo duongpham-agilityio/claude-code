@@ -241,4 +241,25 @@ describe("TodoItem", () => {
 
     expect(screen.getByRole("listitem")).toBeInTheDocument();
   });
+
+  it("renders a drag handle with an accessible label outside a DndContext", () => {
+    setup();
+
+    expect(
+      screen.getByRole("button", { name: "Reorder Learn React" }),
+    ).toBeInTheDocument();
+  });
+
+  it("does not call any callback when the drag handle is clicked", async () => {
+    const user = userEvent.setup();
+    const { onToggle, onEdit, onRemove } = setup();
+
+    await user.click(
+      screen.getByRole("button", { name: "Reorder Learn React" }),
+    );
+
+    expect(onToggle).not.toHaveBeenCalled();
+    expect(onEdit).not.toHaveBeenCalled();
+    expect(onRemove).not.toHaveBeenCalled();
+  });
 });

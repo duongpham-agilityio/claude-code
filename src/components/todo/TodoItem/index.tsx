@@ -1,5 +1,9 @@
 import { useState } from "react";
 
+// External libs
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
 // Types
 import type { Todo } from "@/types/todo";
 
@@ -21,6 +25,15 @@ const BUTTON_CLASS =
 export const TodoItem = (props: TodoItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(props.todo.title);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: props.todo.id });
 
   const trimmedDraft = draft.trim();
   const canSave = trimmedDraft.length > 0;
@@ -55,7 +68,35 @@ export const TodoItem = (props: TodoItemProps) => {
   }`;
 
   return (
-    <li className="flex flex-wrap items-center gap-4 rounded-2xl bg-white px-6 py-5 shadow-md scheme-light">
+    <li
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`relative flex flex-wrap items-center gap-4 rounded-2xl bg-white px-6 py-5 shadow-md scheme-light ${
+        isDragging ? "z-10 opacity-80 shadow-xl" : ""
+      }`}
+    >
+      <button
+        type="button"
+        ref={setActivatorNodeRef}
+        aria-label={`Reorder ${props.todo.title}`}
+        {...attributes}
+        {...listeners}
+        className="-ml-3 shrink-0 cursor-grab touch-none rounded px-1 py-1 text-gray-500 hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-gray-900 active:cursor-grabbing"
+      >
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 16 16"
+          className="size-4"
+          fill="currentColor"
+        >
+          <circle cx="5" cy="3" r="1.5" />
+          <circle cx="11" cy="3" r="1.5" />
+          <circle cx="5" cy="8" r="1.5" />
+          <circle cx="11" cy="8" r="1.5" />
+          <circle cx="5" cy="13" r="1.5" />
+          <circle cx="11" cy="13" r="1.5" />
+        </svg>
+      </button>
       <input
         type="checkbox"
         aria-label={props.todo.title}
